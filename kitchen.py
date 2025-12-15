@@ -131,17 +131,32 @@ class Kitchen:
         # Cashier stands next to serve counter
         self.cashier = Cashier(620, 95)
     
-    def _on_new_order(self, order_name):
+    def _on_new_order(self, order):
         """Callback when new order is created"""
-        self.cashier.announce_order(order_name)
+        self.cashier.announce_order(order.name)
         
-        # Spawn customer coming to the serve counter
+        # Calculate line position for new customer
+        line_position = len([c for c in self.customers if c.state in ["arriving", "waiting"]])
+        
+        # Spawn customer in waiting line
+        target_x = self.serve_counter.rect.x + 80 + (line_position * 50)
         customer = Customer(
-            self.serve_counter.rect.x + 80,
+            target_x,
             self.serve_counter.rect.y + 20,
-            order_name
+            order,
+            line_position
         )
         self.customers.add(customer)
+    
+    def _update_customer_line(self):
+        """Update customer positions in the waiting line"""
+        waiting_customers = [c for c in self.customers if c.state in ["arriving", "waiting"]]
+        waiting_customers.sort(key=lambda c: c.line_position)
+        
+        for i, customer in enumerate(waiting_customers):
+            new_x = self.serve_counter.rect.x + 80 + (i * 50)
+            if customer.line_position != i or customer.target_x != new_x:
+                customer.update_line_position(i, new_x)
     
     def _spawn_dirt(self):
         """Spawn dirt spots near cooking stations"""
@@ -232,18 +247,27 @@ class Kitchen:
             for item in player.held_items:
                 if item.item_type in [ItemType.BURGER, ItemType.HOTDOG, ItemType.PASTA_DISH]:
                     # Try to fulfill an order
-                    success, reward = self.order_manager.try_fulfill_order(item.item_type)
+                    success, reward, completed_order = self.order_manager.try_fulfill_order(item.item_type)
                     
                     if success:
                         player.held_items.remove(item)
                         self.score += reward
                         self.show_message(f"Order complete! +${reward}")
                         
-                        # Make a waiting customer leave
+                        # Make a waiting customer leave with food
                         for customer in self.customers:
-                            if customer.is_waiting():
-                                customer.serve()
+                            if customer.is_waiting() and customer.order and customer.order.order_id == completed_order.order_id:
+                                customer.serve(item.image)
                                 break
+                        else:
+                            # Fallback: first waiting customer
+                            for customer in self.customers:
+                                if customer.is_waiting():
+                                    customer.serve(item.image)
+                                    break
+                        
+                        # Update customer line positions
+                        self._update_customer_line()
                         return
                     else:
                         self.show_message("No matching order!")
@@ -300,6 +324,9 @@ class Kitchen:
         # Update customers
         self.customers.update()
         
+        # Update customer line positions
+        self._update_customer_line()
+        
         # Update cashier
         self.cashier.update()
         
@@ -328,9 +355,9 @@ class Kitchen:
         for dirt in self.dirt_spots:
             screen.blit(dirt.image, dirt.rect)
         
-        # Draw customers
+        # Draw customers with their draw method
         for customer in self.customers:
-            screen.blit(customer.image, customer.rect)
+            customer.draw(screen)
         
         # Draw cashier
         self.cashier.draw(screen)
@@ -360,6 +387,6 @@ class Kitchen:
             'score': self.score,
             'time_remaining': self.time_remaining,
             'game_hour': self.game_hour,
-            'orders_completed': sum(1 for o in self.order_manager.orders if o.completed),
-            'orders_expired': sum(1 for o in self.order_manager.orders if o.expired)
+            'orders_completed': self.order_manager.total_completed,
+            'total_reward': self.order_manager.total_reward
         }

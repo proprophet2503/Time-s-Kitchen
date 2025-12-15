@@ -159,6 +159,53 @@ class GameUI:
             text = self.font_tiny.render(hint, True, LIGHT_GRAY)
             x = SCREEN_WIDTH // 2 - 150 + i * 150
             self.screen.blit(text, (x, y))
+    
+    def draw_order_guide(self, active_orders):
+        """Draw step-by-step guide for the first active order"""
+        from orders import ORDER_GUIDES
+        
+        if not active_orders:
+            return
+        
+        # Get the oldest order (first one to complete)
+        first_order = active_orders[0]
+        guide = ORDER_GUIDES.get(first_order.dish_type)
+        
+        if not guide:
+            return
+        
+        # Draw guide panel on the right side
+        panel_width = 220
+        panel_height = 200
+        panel_x = SCREEN_WIDTH - panel_width - 10
+        panel_y = 130
+        
+        # Background
+        bg_surface = pygame.Surface((panel_width, panel_height))
+        bg_surface.fill((20, 20, 20))
+        bg_surface.set_alpha(200)
+        self.screen.blit(bg_surface, (panel_x, panel_y))
+        pygame.draw.rect(self.screen, (80, 80, 80), (panel_x, panel_y, panel_width, panel_height), 2, border_radius=5)
+        
+        # Title
+        title_text = f"How to make {guide['name']}:"
+        title_surface = self.font_small.render(title_text, True, YELLOW)
+        self.screen.blit(title_surface, (panel_x + 5, panel_y + 5))
+        
+        # Steps
+        y = panel_y + 30
+        for i, step in enumerate(guide['steps'][:7]):  # Show max 7 steps
+            # Truncate step if too long
+            if len(step) > 32:
+                step = step[:29] + "..."
+            step_surface = self.font_tiny.render(step, True, WHITE)
+            self.screen.blit(step_surface, (panel_x + 8, y))
+            y += 20
+        
+        # Reward
+        reward_text = f"Reward: ${guide['reward']}"
+        reward_surface = self.font_tiny.render(reward_text, True, GREEN)
+        self.screen.blit(reward_surface, (panel_x + 8, panel_y + panel_height - 25))
 
 
 class MainMenu:

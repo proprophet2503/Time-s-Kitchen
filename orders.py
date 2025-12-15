@@ -211,14 +211,14 @@ class OrderManager:
             text = font.render(f"Done: {co.order_name}", True, WHITE)
             screen.blit(text, (bg_x + 10, y + 5))
             
-            reward_text = small_font.render(f"+\${co.reward}", True, YELLOW)
+            reward_text = small_font.render(f"+${co.reward}", True, YELLOW)
             screen.blit(reward_text, (bg_x + bg_width - 50, y + 10))
             
             y += 45
     
     def _draw_stats(self, screen):
         font = pygame.font.Font(None, 20)
-        stats_text = f"Completed: {self.total_completed} | Total: \${self.total_reward}"
+        stats_text = f"Completed: {self.total_completed} | Total: ${self.total_reward}"
         text_surface = font.render(stats_text, True, LIGHT_GRAY)
         text_rect = text_surface.get_rect(right=SCREEN_WIDTH - 10, top=58)
         screen.blit(text_surface, text_rect)

@@ -255,11 +255,12 @@ class Player(pygame.sprite.Sprite):
 
 
 class Customer(pygame.sprite.Sprite):
-    """Customer that comes to order food"""
+    """Customer that comes to order food with animations"""
     
-    def __init__(self, target_x, target_y, order):
+    def __init__(self, target_x, target_y, order=None, line_position=0):
         super().__init__()
-        self.image = SpriteSheet.load_image("customer.png", (PLAYER_SIZE, PLAYER_SIZE))
+        self.base_image = SpriteSheet.load_image("customer.png", (PLAYER_SIZE, PLAYER_SIZE))
+        self.image = self.base_image.copy()
         self.rect = self.image.get_rect()
         
         # Start from right side of screen
@@ -269,12 +270,27 @@ class Customer(pygame.sprite.Sprite):
         self.target_x = target_x
         self.target_y = target_y
         self.order = order
+        self.line_position = line_position
         
-        self.state = "arriving"  # arriving, waiting, leaving
+        # States: arriving, waiting, receiving_food, leaving_happy, leaving_corner
+        self.state = "arriving"
         self.speed = CUSTOMER_SPEED
         
+        # Animation properties
+        self.bob_timer = 0
+        self.bob_offset = 0
+        self.wait_animation_speed = 0.08
+        
+        # Food holding
+        self.held_food = None
+        self.food_image = None
+        
+        # Corner exit position (bottom-right corner)
+        self.corner_x = SCREEN_WIDTH - 60
+        self.corner_y = SCREEN_HEIGHT - 100
+        
     def update(self):
-        """Update customer position"""
+        """Update customer position and animations"""
         if self.state == "arriving":
             if self.rect.x > self.target_x:
                 self.rect.x -= self.speed
@@ -282,18 +298,84 @@ class Customer(pygame.sprite.Sprite):
                 self.rect.x = self.target_x
                 self.state = "waiting"
                 
+        elif self.state == "waiting":
+            # Bobbing animation while waiting
+            self.bob_timer += self.wait_animation_speed
+            self.bob_offset = int(3 * abs(pygame.math.Vector2(0, 1).rotate(self.bob_timer * 60).y))
+            
+        elif self.state == "receiving_food":
+            # Brief pause to show receiving food
+            self.state = "leaving_corner"
+            
+        elif self.state == "leaving_corner":
+            # Walk to corner before exiting
+            dx = self.corner_x - self.rect.x
+            dy = self.corner_y - self.rect.y
+            dist = max(abs(dx), abs(dy))
+            
+            if dist > self.speed:
+                # Move towards corner
+                if abs(dx) > self.speed:
+                    self.rect.x += self.speed if dx > 0 else -self.speed
+                if abs(dy) > self.speed:
+                    self.rect.y += self.speed if dy > 0 else -self.speed
+            else:
+                self.state = "leaving"
+                
         elif self.state == "leaving":
+            # Exit to the right
             if self.rect.x < SCREEN_WIDTH + 100:
                 self.rect.x += self.speed
             else:
                 self.kill()
     
-    def serve(self):
-        """Customer has been served, start leaving"""
-        self.state = "leaving"
+    def serve(self, food_image=None):
+        """Customer has been served, start leaving with food"""
+        self.held_food = True
+        self.food_image = food_image
+        self.state = "receiving_food"
     
     def is_waiting(self):
         return self.state == "waiting"
+    
+    def update_line_position(self, new_position, new_target_x):
+        """Update position in the waiting line"""
+        self.line_position = new_position
+        self.target_x = new_target_x
+        if self.state == "waiting" and self.rect.x != new_target_x:
+            self.state = "arriving"  # Move to new position
+    
+    def draw(self, screen):
+        """Draw customer with animations and held food"""
+        # Apply bobbing offset if waiting
+        draw_y = self.rect.y - self.bob_offset if self.state == "waiting" else self.rect.y
+        
+        # Draw customer
+        screen.blit(self.image, (self.rect.x, draw_y))
+        
+        # Draw held food above head if carrying
+        if self.held_food and self.food_image:
+            food_x = self.rect.centerx - 15
+            food_y = draw_y - 35
+            
+            # Draw background circle
+            pygame.draw.circle(screen, (255, 255, 255), 
+                             (food_x + 15, food_y + 15), 18)
+            pygame.draw.circle(screen, (100, 200, 100), 
+                             (food_x + 15, food_y + 15), 18, 2)
+            
+            # Draw food
+            small_food = pygame.transform.scale(self.food_image, (30, 30))
+            screen.blit(small_food, (food_x, food_y))
+        
+        # Draw waiting indicator (small dots based on wait time)
+        if self.state == "waiting" and self.order:
+            # Draw order number above customer
+            font = pygame.font.Font(None, 18)
+            order_text = font.render(f"#{self.order.order_id}", True, (255, 255, 0))
+            text_x = self.rect.centerx - order_text.get_width() // 2
+            text_y = draw_y - 15
+            screen.blit(order_text, (text_x, text_y))
 
 
 class Cashier(pygame.sprite.Sprite):

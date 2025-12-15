@@ -180,6 +180,11 @@ class Game:
         # Draw orders in top bar area
         self.kitchen.draw_orders(self.screen)
         
+        # Draw order guide for active orders
+        active_orders = self.kitchen.order_manager.get_active_orders()
+        if active_orders:
+            self.ui.draw_order_guide(active_orders)
+        
         # Draw player info at bottom
         self.ui.draw_player_info(list(self.kitchen.players))
         
