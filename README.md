@@ -140,7 +140,7 @@ Proyek ini dikembangkan dengan fokus pada:
 
 ## Ucapan Terima Kasih
 
-Kami mengucapkan terima kasih kepada Bapak Rizky Januar Akbar, S.Kom., M.Eng. selaku dosen pengampu mata kuliah Pemrograman Berorientasi Objek yang telah membimbing dan memberikan ilmu yang sangat bermanfaat dalam pengembangan proyek ini. Penerapan konsep OOP yang diajarkan sangat membantu dalam merancang arsitektur game yang terstruktur dan maintainable.
+Kami mengucapkan terima kasih kepada Bapak Rizky Januar Akbar, S.Kom., M.Eng selaku dosen pengampu mata kuliah Pemrograman Berorientasi Objek yang telah membimbing dan memberikan ilmu yang sangat bermanfaat dalam pengembangan proyek ini. Penerapan konsep OOP yang diajarkan sangat membantu dalam merancang arsitektur game yang terstruktur dan maintainable.
 
 ## Lisensi
 
@@ -150,4 +150,4 @@ Proyek ini dikembangkan untuk keperluan akademik sebagai tugas proyek akhir mata
 ## Collaborators
 
 - Nazhif Berlian Nasarullah (5054241035)
-- Jeremy Mattathias Mboe (5054241012) 
+- Jeremy Mattathias Mboe (5054241012)
