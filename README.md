@@ -144,7 +144,7 @@ Kami mengucapkan terima kasih kepada Bapak Rizky Januar Akbar, S.Kom., M.Eng. se
 
 ## Lisensi
 
-Proyek ini dikembangkan untuk keperluan akademik sebagai tugas akhir mata kuliah Pemrograman Berorientasi Objek.
+Proyek ini dikembangkan untuk keperluan akademik sebagai tugas proyek akhir mata kuliah Pemrograman Berorientasi Objek.
 
 
 ## Collaborators
