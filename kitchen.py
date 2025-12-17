@@ -489,6 +489,10 @@ class Kitchen:
         for station in self.stations:
             station.update(dt)
         
+        # Update mops
+        for mop in self.mops:
+            mop.update()
+        
         # Update orders
         self.order_manager.update(dt, self.time_remaining)
         
