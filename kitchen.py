@@ -156,15 +156,15 @@ class Kitchen:
         # Apply speed perk if purchased
         speed_boost = self.perks.get("speed_boost", 0)
         
-        # Player 1 starts in middle area, di bawah longtable
-        player1 = Player(1, 700, 350, speed_boost=speed_boost, 
+        # Player 1 starts in kitchen area, left side near cooking stations
+        player1 = Player(1, 200, 200, speed_boost=speed_boost, 
                         holding_boost=self.perks.get("holding_boost", 0))
         self.players.add(player1)
         self.all_sprites.add(player1)
         
         if self.num_players == 2:
-            # Player 2 starts nearby
-            player2 = Player(2, 700, 350, speed_boost=speed_boost,
+            # Player 2 starts nearby in kitchen
+            player2 = Player(2, 250, 200, speed_boost=speed_boost,
                            holding_boost=self.perks.get("holding_boost", 0))
             self.players.add(player2)
             self.all_sprites.add(player2)
@@ -477,11 +477,12 @@ class Kitchen:
             self._spawn_dirt()
         
         # Get pressed keys
+        # Get pressed keys
         keys = pygame.key.get_pressed()
         
         # Update players
-        # Include stations and long tables as obstacles
-        obstacles = [s for s in self.stations] + list(self.longtables)
+        # Include stations, long tables, and dining tables as obstacles
+        obstacles = [s for s in self.stations] + list(self.longtables) + list(self.dining_tables)
         for player in self.players:
             player.update(keys, obstacles)
         

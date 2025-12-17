@@ -600,8 +600,15 @@ class DiningTable(Station):
         super().__init__("dining", x, y, "diningtable.png")
         self.occupied = False  # Track if table is occupied by customer
         
-        # Remove collision - players can walk through dining tables
-        self.collision_rect = pygame.Rect(0, 0, 0, 0)
+        # Create collision border - shrink collision area to create walkable edges
+        # This makes a smaller collision box so players can walk around the table
+        collision_margin = 15  # Pixels of walkable space around the edge
+        self.collision_rect = pygame.Rect(
+            self.rect.x + collision_margin,
+            self.rect.y + collision_margin,
+            self.rect.width - (collision_margin * 2),
+            self.rect.height - (collision_margin * 2)
+        )
         
     def interact(self, player):
         """No interaction with dining tables"""
