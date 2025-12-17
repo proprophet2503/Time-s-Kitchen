@@ -50,7 +50,7 @@ ORDERS_PER_HOUR_SINGLE = 5
 ORDERS_PER_HOUR_MULTI = 10
 
 # Player settings
-PLAYER_SPEED = 5
+PLAYER_SPEED = 2
 PLAYER_SIZE = 80  # Default size (used by Player 2, NPCs, Customers)
 PLAYER1_SIZE = 120  # Player 1 specific size (set same as PLAYER_SIZE to match Player 2)
 
