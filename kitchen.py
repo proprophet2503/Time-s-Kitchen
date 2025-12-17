@@ -5,7 +5,7 @@ Kitchen and gameplay management for Time's Kitchen game
 import pygame
 import random
 from settings import *
-from sprites import Player, Customer, Cashier, DirtSpot, SpriteSheet, Pedestrian, Tenant
+from sprites import Player, Customer, Cashier, DirtSpot, Mop, SpriteSheet, Pedestrian, Tenant
 from stations import Cooler, Stove, Boiler, AssemblyTable, ServeCounter, MopStation, DiningTable, LongTable, IngredientTable, SauceStation, LettuceStation
 from orders import OrderManager
 
@@ -36,6 +36,7 @@ class Kitchen:
         self.longtables = pygame.sprite.Group()
         self.pedestrians = pygame.sprite.Group()
         self.tenants = pygame.sprite.Group()
+        self.mops = pygame.sprite.Group()  # Mops that can be picked up
         
         # Create kitchen layout
         self._setup_stations()
@@ -43,6 +44,7 @@ class Kitchen:
         self._setup_cashier()
         self._setup_pedestrians()
         self._setup_tenants()
+        self._setup_mops()
         
         # Order management
         self.order_manager = OrderManager(num_players)
@@ -197,6 +199,13 @@ class Kitchen:
         tenant = Tenant(road_start_x - 10, 300)
         self.tenants.add(tenant)
         self.all_sprites.add(tenant)
+    
+    def _setup_mops(self):
+        """Set up mop stations - mops that can be picked up"""
+        # Place mop near the mop station
+        mop1 = Mop(30, 595)
+        self.mops.add(mop1)
+        self.all_sprites.add(mop1)
     
     def _on_new_order(self, order):
         """Callback when new order is created"""
