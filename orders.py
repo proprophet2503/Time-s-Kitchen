@@ -264,14 +264,27 @@ ORDER_GUIDES = {
         "name": "Pasta",
         "reward": REWARD_PASTA,
         "steps": [
-            "1. Go to PASTA cooler (left) -> SPACE to pick Pasta",
+            "1. Go to PASTA table (left) -> SPACE to pick Pasta",
             "2. Go to BOILER (top) -> SPACE to place Pasta",
             "3. Wait 7s for boiling",
             "4. SPACE at Boiler to grab Boiled Pasta",
-            "5. Go to ASSEMBLY table -> SPACE to place",
-            "6. SPACE again to assemble Pasta dish",
-            "7. Go to SERVE counter -> E to serve"
+            "5. Go to SAUCE station (bottom left) -> SPACE for Sauce",
+            "6. Go to ASSEMBLY table -> SPACE to place items",
+            "7. SPACE again to assemble Pasta dish",
+            "8. Go to SERVE counter -> E to serve"
         ],
-        "ingredients": ["Boiled Pasta"]
+        "ingredients": ["Boiled Pasta", "Sauce"]
+    },
+    ItemType.SALAD_DISH: {
+        "name": "Salad",
+        "reward": REWARD_SALAD,
+        "steps": [
+            "1. Go to LETTUCE station (bottom left) -> SPACE to pick Lettuce",
+            "2. Go to SAUCE station (bottom left) -> SPACE to pick Sauce",
+            "3. Go to ASSEMBLY table -> SPACE to place items",
+            "4. SPACE again to assemble Salad",
+            "5. Go to SERVE counter -> E to serve"
+        ],
+        "ingredients": ["Lettuce", "Sauce"]
     }
 }
