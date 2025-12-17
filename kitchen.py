@@ -321,15 +321,30 @@ class Kitchen:
         if not player:
             return
         
-        # Check for dirt cleaning first
-        for dirt in self.dirt_spots:
-            distance = ((dirt.rect.centerx - player.rect.centerx) ** 2 + 
-                       (dirt.rect.centery - player.rect.centery) ** 2) ** 0.5
-            if distance < 80:
-                reward = dirt.clean()
-                self.score += reward
-                self.show_message(f"+${reward} for cleaning!")
-                return
+        # Check for mop pickup first
+        for mop in self.mops:
+            if not mop.is_held:
+                distance = ((mop.rect.centerx - player.rect.centerx) ** 2 + 
+                           (mop.rect.centery - player.rect.centery) ** 2) ** 0.5
+                if distance < 80:
+                    if player.pickup_mop(mop):
+                        mop.is_held = True
+                        self.show_message("Picked up mop! Press SPACE near dirt to clean")
+                        return
+        
+        # Check for dirt cleaning with mop
+        if player.holding_mop:
+            for dirt in self.dirt_spots:
+                distance = ((dirt.rect.centerx - player.rect.centerx) ** 2 + 
+                           (dirt.rect.centery - player.rect.centery) ** 2) ** 0.5
+                if distance < 80:
+                    # Start cleaning animation
+                    if player.start_cleaning():
+                        # Remove dirt after animation completes
+                        reward = dirt.clean()
+                        self.score += reward
+                        self.show_message(f"+${reward} for cleaning!")
+                        return
         
         # Check for cooler interaction (show menu)
         if self.cooler.can_interact(player):
@@ -404,11 +419,23 @@ class Kitchen:
         self.show_message("No customer nearby!")
     
     def _player_drop(self, player_index):
-        """Handle player dropping an item"""
+        """Handle player dropping an item or mop"""
         player = self._get_player(player_index)
         if not player:
             return
         
+        # Check if holding mop - drop it
+        if player.holding_mop:
+            mop = player.drop_mop()
+            if mop:
+                # Place mop at player's current position
+                mop.rect.x = player.rect.x
+                mop.rect.y = player.rect.y + player.rect.height
+                mop.is_held = False
+                self.show_message("Dropped mop")
+                return
+        
+        # Otherwise drop held item
         dropped = player.drop_item()
         if dropped:
             self.show_message(f"Dropped {dropped.get_display_name()}")
@@ -517,7 +544,11 @@ class Kitchen:
         for dirt in self.dirt_spots:
             screen.blit(dirt.image, dirt.rect)
         
-        # Draw customers with their draw method
+        # Draw mops (not being held)
+        for mop in self.mops:
+            mop.draw(screen)
+        
+        # Draw customers
         for customer in self.customers:
             customer.draw(screen)
         
