@@ -175,10 +175,10 @@ class GameUI:
             return
         
         # Draw guide panel on the right side
-        panel_width = 220
-        panel_height = 200
+        panel_width = 250
+        panel_height = 220
         panel_x = SCREEN_WIDTH - panel_width - 10
-        panel_y = 130
+        panel_y = SCREEN_HEIGHT - panel_height - 10
         
         # Background
         bg_surface = pygame.Surface((panel_width, panel_height))
@@ -480,6 +480,13 @@ class GameOverScreen:
         self.font_text = pygame.font.Font(None, 36)
         self.font_small = pygame.font.Font(None, 28)
         
+        # Load background image
+        try:
+            self.background = pygame.image.load("assets/endmenu.png").convert()
+            self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        except:
+            self.background = None  # Fallback to colored background if image not found
+        
     def handle_input(self, event):
         """Handle input"""
         if event.type == pygame.KEYDOWN:
@@ -491,7 +498,11 @@ class GameOverScreen:
     
     def draw(self):
         """Draw game over screen"""
-        self.screen.fill(DARK_BROWN)
+        # Draw background image or fallback color
+        if self.background:
+            self.screen.blit(self.background, (0, 0))
+        else:
+            self.screen.fill(DARK_BROWN)
         
         # Title
         title = self.font_title.render("SHIFT COMPLETE!", True, YELLOW)
@@ -519,7 +530,7 @@ class GameOverScreen:
         self.screen.blit(mode_text, mode_rect)
         
         # Options
-        restart_text = self.font_text.render("Press R to Play Again", True, WHITE)
+        restart_text = self.font_text.render("Press R to Play Again & Visit Store", True, WHITE)
         restart_rect = restart_text.get_rect(centerx=SCREEN_WIDTH // 2, y=480)
         self.screen.blit(restart_text, restart_rect)
         

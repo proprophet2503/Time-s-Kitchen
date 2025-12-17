@@ -25,12 +25,17 @@ class Order:
         self.image = self._load_image()
         self.wait_time = 0
         
+        # Link to customer and dining table
+        self.customer = None
+        self.dining_table = None
+        
     def _load_image(self):
         from sprites import SpriteSheet
         image_files = {
             ItemType.BURGER: "burger.png",
             ItemType.HOTDOG: "hot dog.png",
-            ItemType.PASTA_DISH: "boiled_pasta.png"
+            ItemType.PASTA_DISH: "boiled_pasta.png",
+            ItemType.SALAD_DISH: "salad.png"
         }
         filename = image_files.get(self.dish_type, "burger.png")
         return SpriteSheet.load_image(filename, (40, 40))
@@ -82,7 +87,7 @@ class OrderManager:
         self.total_reward = 0
         self.total_completed = 0
         
-        self.dish_types = [ItemType.BURGER, ItemType.HOTDOG, ItemType.PASTA_DISH]
+        self.dish_types = [ItemType.BURGER, ItemType.HOTDOG, ItemType.PASTA_DISH, ItemType.SALAD_DISH]
         
         self.on_new_order = None
         self.on_order_complete = None
@@ -143,8 +148,8 @@ class OrderManager:
         active_orders = self.get_active_orders()
         active_orders.sort(key=lambda o: o.wait_time, reverse=True)
         
-        order_width = 95
-        order_height = 48
+        order_width = 120  # Increased from 95 to 120
+        order_height = 55  # Increased from 48 to 55
         start_x = 320
         
         for i, order in enumerate(active_orders[:max_display]):

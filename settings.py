@@ -3,9 +3,9 @@ Settings and constants for Time's Kitchen game
 """
 
 # Screen settings
-SCREEN_WIDTH = 900
-SCREEN_HEIGHT = 650
-FPS = 60
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
+FPS = 120
 TITLE = "Time's Kitchen"
 
 # Colors
@@ -29,7 +29,7 @@ ORDER_BG = (70, 50, 30)
 ORDER_URGENT = (150, 50, 30)
 
 # Game timing (in seconds)
-GAME_DURATION = 360  # 6 minutes = 360 seconds
+GAME_DURATION = 200  # 6 minutes = 360 seconds
 GAME_HOUR = 60  # 1 game hour = 60 real seconds (1 minute)
 ORDER_TIMEOUT = 30  # Seconds before order expires
 
@@ -42,6 +42,7 @@ COOK_TIME_PASTA = 7
 REWARD_BURGER = 10
 REWARD_HOTDOG = 8
 REWARD_PASTA = 6
+REWARD_SALAD = 5
 REWARD_CLEANING = 3
 
 # Orders per hour
@@ -50,13 +51,14 @@ ORDERS_PER_HOUR_MULTI = 10
 
 # Player settings
 PLAYER_SPEED = 5
-PLAYER_SIZE = 64
+PLAYER_SIZE = 80  # Default size (used by Player 2, NPCs, Customers)
+PLAYER1_SIZE = 120  # Player 1 specific size (set same as PLAYER_SIZE to match Player 2)
 
 # Station settings
-STATION_SIZE = 80
+STATION_SIZE = 90
 
 # Tile settings
-TILE_SIZE = 64
+TILE_SIZE = 200
 
 # Item settings
 ITEM_SIZE = 48
@@ -78,6 +80,8 @@ class ItemType:
     MEAT = "meat"
     SAUSAGE = "sausage"
     PASTA = "pasta"
+    LETTUCE = "lettuce"  # Changed from SALAD
+    SAUCE = "sauce"  # New ingredient for salad
     
     # Cooked ingredients
     COOKED_MEAT = "cooked_meat"
@@ -88,6 +92,7 @@ class ItemType:
     BURGER = "burger"
     HOTDOG = "hotdog"
     PASTA_DISH = "pasta_dish"
+    SALAD_DISH = "salad_dish"
 
 # Station types
 class StationType:
@@ -95,6 +100,7 @@ class StationType:
     STOVE = "stove"
     BOILER = "boiler"
     ASSEMBLY = "assembly"
+    SAUCE = "sauce"  # New sauce station
     SERVE = "serve"
     MOP = "mop"
 
@@ -111,9 +117,14 @@ RECIPES = {
         "name": "Hotdog"
     },
     ItemType.PASTA_DISH: {
-        "ingredients": [ItemType.BOILED_PASTA],
+        "ingredients": [ItemType.BOILED_PASTA, ItemType.SAUCE],
         "reward": REWARD_PASTA,
         "name": "Pasta"
+    },
+    ItemType.SALAD_DISH: {
+        "ingredients": [ItemType.SAUCE, ItemType.LETTUCE],
+        "reward": REWARD_SALAD,
+        "name": "Salad"
     }
 }
 

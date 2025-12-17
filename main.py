@@ -13,6 +13,7 @@ from settings import *
 from ui import GameUI, MainMenu, PlayerSelectMenu, HowToPlayScreen, HighScoreScreen, GameOverScreen
 from kitchen import Kitchen
 from highscore import HighScoreManager
+from store import GameSession
 
 
 class Game:
@@ -29,8 +30,11 @@ class Game:
         self.running = True
         
         # Game state
-        self.state = "menu"  # menu, player_select, how_to_play, high_scores, playing, game_over
+        self.state = "menu"  # menu, player_select, how_to_play, high_scores, playing, game_over, store
         self.num_players = 1
+        
+        # Game session for perks
+        self.game_session = GameSession()
         
         # Components
         self.ui = GameUI(self.screen)
@@ -110,13 +114,28 @@ class Game:
             elif self.state == "game_over":
                 result = self.game_over_screen.handle_input(event)
                 if result == "Menu":
+                    self.game_session.reset_session()  # Reset perks and money
                     self.state = "menu"
                 elif result == "Restart":
+                    # Go to store first
+                    self.state = "store"
+                    
+            elif self.state == "store":
+                result = self.game_session.store.handle_input(event)
+                if result == "purchased":
+                    pass  # Just update the display
+                elif result == "cannot_afford":
+                    pass  # Could show a message
+                elif result == "replay":
+                    self.game_session.apply_store_perks()
                     self._start_game()
+                elif result == "menu":
+                    self.game_session.reset_session()  # Reset perks and money
+                    self.state = "menu"
     
     def _start_game(self):
         """Initialize and start a new game"""
-        self.kitchen = Kitchen(self.num_players)
+        self.kitchen = Kitchen(self.num_players, self.game_session.get_perks())
         self.state = "playing"
     
     def _update(self, dt):
@@ -132,6 +151,9 @@ class Game:
         """Handle game ending"""
         final_score = self.kitchen.score
         is_high_score = self.high_score_manager.add_score(final_score, self.num_players)
+        
+        # Initialize store with final score
+        self.game_session.end_game(final_score)
         
         self.game_over_screen = GameOverScreen(
             self.screen,
@@ -160,6 +182,12 @@ class Game:
             
         elif self.state == "game_over":
             self.game_over_screen.draw()
+            
+        elif self.state == "store":
+            # Draw last gameplay frame as background
+            self._draw_gameplay()
+            # Draw store overlay
+            self.game_session.store.draw(self.screen)
     
     def _draw_gameplay(self):
         """Draw the main gameplay screen"""

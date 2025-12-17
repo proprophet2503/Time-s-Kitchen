@@ -18,17 +18,22 @@ class Station(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         
-        # Collision rect
-        self.collision_rect = self.rect.copy()
+        # Collision rect - tidak termasuk area tulisan di bawah
+        # Hanya objek image saja yang punya collision, diperkecil sedikit
+        collision_offset = 5  # Offset untuk memperkecil collision area
+        self.collision_rect = pygame.Rect(
+            self.rect.x + collision_offset,
+            self.rect.y + collision_offset,
+            self.rect.width - (collision_offset * 2),
+            self.rect.height - (collision_offset * 2)
+        )
         
         # Item on this station
         self.current_item = None
         
     def can_interact(self, player):
-        """Check if player is close enough to interact"""
-        distance = ((self.rect.centerx - player.rect.centerx) ** 2 + 
-                   (self.rect.centery - player.rect.centery) ** 2) ** 0.5
-        return distance < STATION_SIZE + 30
+        """Player can interact only when touching the station"""
+        return self.collision_rect.colliderect(player.rect)
     
     def interact(self, player):
         """Interact with this station - override in subclasses"""
@@ -61,14 +66,30 @@ class Cooler(Station):
     }
     
     def __init__(self, x, y, item_type):
+        # Override image size for cooler (make it bigger)
         super().__init__(StationType.COOLER, x, y, "cooler.png")
+        
+        # Resize cooler to be bigger (120x120 instead of default STATION_SIZE)
+        cooler_size = 120
+        self.image = SpriteSheet.load_image("cooler.png", (cooler_size, cooler_size))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        
+        # Update collision rect
+        self.collision_rect = pygame.Rect(
+            self.rect.x,
+            self.rect.y,
+            self.rect.width,
+            self.rect.height
+        )
+        
         self.provides_item = item_type
         self.label = self._get_label()
         
         # Load preview image for this ingredient
-        from sprites import SpriteSheet
         preview_file = self.ITEM_IMAGES.get(item_type, "bread.png")
-        self.preview_image = SpriteSheet.load_image(preview_file, (32, 32))
+        self.preview_image = SpriteSheet.load_image(preview_file, (40, 40))  # Bigger preview too
         
     def _get_label(self):
         """Get label for this cooler"""
@@ -93,8 +114,8 @@ class Cooler(Station):
         screen.blit(self.image, self.rect)
         
         # Draw ingredient preview on cooler
-        preview_x = self.rect.centerx - 16
-        preview_y = self.rect.centery - 16
+        preview_x = self.rect.centerx - 20  # Adjusted for bigger preview
+        preview_y = self.rect.centery - 20
         screen.blit(self.preview_image, (preview_x, preview_y))
         
         # Draw label with background
@@ -258,6 +279,15 @@ class AssemblyTable(Station):
                 return True, f"Picked up {result_name}"
             return False, "Hands full!"
         
+        # Check if there are finished dishes on table that can be picked up
+        for item in self.items_on_table:
+            if item.item_type in [ItemType.BURGER, ItemType.HOTDOG, ItemType.PASTA_DISH, ItemType.SALAD_DISH]:
+                if len(player.held_items) < 3:
+                    player.pickup_item(item)
+                    self.items_on_table.remove(item)
+                    return True, f"Picked up {item.get_display_name()}"
+                return False, "Hands full!"
+        
         # Place item on table
         if player.held_items:
             item = player.held_items.pop()
@@ -311,7 +341,64 @@ class AssemblyTable(Station):
             item_x = self.rect.centerx - ITEM_SIZE // 2 + offset_x
             item_y = self.rect.centery - ITEM_SIZE // 2 + offset_y
             screen.blit(item.image, (item_x, item_y))
+
+
+class IngredientTable(Station):
+    """Table for ingredient storage (bread, pasta, lettuce)"""
+    
+    ITEM_IMAGES = {
+        ItemType.BREAD: "bread.png",
+        ItemType.PASTA: "pasta.png",
+        ItemType.LETTUCE: "lettuce.png"
+    }
+    
+    def __init__(self, x, y, item_type):
+        super().__init__(StationType.ASSEMBLY, x, y, "assemble.png")
+        self.provides_item = item_type
+        self.label = self._get_label()
         
+        # Load preview image for this ingredient (bigger size)
+        from sprites import SpriteSheet
+        preview_file = self.ITEM_IMAGES.get(item_type, "bread.png")
+        self.preview_image = SpriteSheet.load_image(preview_file, (50, 50))  # Increased from 32 to 50
+    
+    def _get_label(self):
+        """Get label for this table"""
+        labels = {
+            ItemType.BREAD: "Bread",
+            ItemType.PASTA: "Pasta",
+            ItemType.LETTUCE: "Lettuce"
+        }
+        return labels.get(self.provides_item, "?")
+    
+    def interact(self, player):
+        """Give player an ingredient from the table"""
+        if len(player.held_items) < 3:
+            new_item = Item(self.provides_item)
+            player.pickup_item(new_item)
+            return True, f"Picked up {self.label}"
+        return False, "Hands full!"
+    
+    def draw(self, screen):
+        """Draw ingredient table with label and preview"""
+        screen.blit(self.image, self.rect)
+        
+        # Draw ingredient preview on table (centered)
+        preview_x = self.rect.centerx - 25  # Adjusted for 50x50 size
+        preview_y = self.rect.centery - 38  # Moved up by 10 pixels
+        screen.blit(self.preview_image, (preview_x, preview_y))
+        
+        # Draw label with background
+        font = pygame.font.Font(None, 18)
+        text = font.render(self.label, True, WHITE)
+        text_rect = text.get_rect(centerx=self.rect.centerx, top=self.rect.bottom + 2)
+        
+        # Background for better visibility
+        bg_rect = text_rect.inflate(8, 4)
+        pygame.draw.rect(screen, (40, 40, 40), bg_rect)
+        pygame.draw.rect(screen, (100, 100, 100), bg_rect, 1)
+        screen.blit(text, text_rect)
+
         # Draw assembled item if present
         if self.current_item:
             item_x = self.rect.centerx - ITEM_SIZE // 2
@@ -338,10 +425,19 @@ class ServeCounter(Station):
         self.served_dish = None
         
     def interact(self, player):
-        """Place a finished dish to serve"""
-        # Check if player has a finished dish
+        """Place a finished dish to serve or pick up from counter"""
+        # If there's a dish on counter, pick it up
+        if self.served_dish:
+            if len(player.held_items) < 3:
+                player.pickup_item(self.served_dish)
+                result_name = self.served_dish.get_display_name()
+                self.served_dish = None
+                return True, f"Picked up {result_name}"
+            return False, "Hands full!"
+        
+        # Check if player has a finished dish to serve
         for item in player.held_items:
-            if item.item_type in [ItemType.BURGER, ItemType.HOTDOG, ItemType.PASTA_DISH]:
+            if item.item_type in [ItemType.BURGER, ItemType.HOTDOG, ItemType.PASTA_DISH, ItemType.SALAD_DISH]:
                 player.held_items.remove(item)
                 self.served_dish = item
                 return True, f"Served {item.get_display_name()}"
@@ -377,7 +473,22 @@ class MopStation(Station):
     """Station to get mop for cleaning"""
     
     def __init__(self, x, y):
+        # Use smaller size for mop (60x60 instead of default STATION_SIZE)
         super().__init__(StationType.MOP, x, y, "mop.png")
+        mop_size = 60
+        self.image = SpriteSheet.load_image("mop.png", (mop_size, mop_size))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        
+        # Update collision rect
+        self.collision_rect = pygame.Rect(
+            self.rect.x,
+            self.rect.y,
+            self.rect.width,
+            self.rect.height
+        )
+        
         self.has_mop = True
         
     def interact(self, player):
@@ -408,11 +519,86 @@ class MopStation(Station):
         return None
 
 
+class LettuceStation(Station):
+    """Station to get lettuce for making salad"""
+    
+    def __init__(self, x, y):
+        super().__init__("lettuce", x, y, "assemble.png")
+        
+        # Load lettuce preview image
+        from sprites import SpriteSheet
+        self.preview_image = SpriteSheet.load_image("lettuce.png", (50, 50))
+        
+    def interact(self, player):
+        """Pick up lettuce"""
+        if len(player.held_items) < 3:
+            from sprites import Item
+            lettuce = Item(ItemType.LETTUCE, self.rect.x, self.rect.y)
+            player.pickup_item(lettuce)
+            return True, "Picked up Lettuce"
+        return False, "Hands full!"
+    
+    def draw(self, screen):
+        """Draw lettuce station with preview and label"""
+        screen.blit(self.image, self.rect)
+        
+        # Draw preview image on table
+        preview_x = self.rect.centerx - 25
+        preview_y = self.rect.centery - 25
+        screen.blit(self.preview_image, (preview_x, preview_y))
+        
+        # Draw label
+        font = pygame.font.Font(None, 18)
+        text = font.render("Lettuce", True, WHITE)
+        text_rect = text.get_rect(centerx=self.rect.centerx, top=self.rect.bottom + 2)
+        bg_rect = text_rect.inflate(6, 2)
+        pygame.draw.rect(screen, (40, 40, 40), bg_rect)
+        screen.blit(text, text_rect)
+
+
+class SauceStation(Station):
+    """Station to get sauce for making salad"""
+    
+    def __init__(self, x, y):
+        super().__init__(StationType.SAUCE, x, y, "assemble.png")
+        
+        # Load sauce preview image
+        from sprites import SpriteSheet
+        self.preview_image = SpriteSheet.load_image("sauce.png", (50, 50))
+        
+    def interact(self, player):
+        """Pick up sauce"""
+        if len(player.held_items) < 3:
+            from sprites import Item
+            sauce = Item(ItemType.SAUCE, self.rect.x, self.rect.y)
+            player.pickup_item(sauce)
+            return True, "Picked up Sauce"
+        return False, "Hands full!"
+    
+    def draw(self, screen):
+        """Draw sauce station with preview and label"""
+        screen.blit(self.image, self.rect)
+        
+        # Draw preview image on table
+        preview_x = self.rect.centerx - 25
+        preview_y = self.rect.centery - 25
+        screen.blit(self.preview_image, (preview_x, preview_y))
+        
+        # Draw label
+        font = pygame.font.Font(None, 18)
+        text = font.render("Sauce", True, WHITE)
+        text_rect = text.get_rect(centerx=self.rect.centerx, top=self.rect.bottom + 2)
+        bg_rect = text_rect.inflate(6, 2)
+        pygame.draw.rect(screen, (40, 40, 40), bg_rect)
+        screen.blit(text, text_rect)
+
+
 class DiningTable(Station):
     """Decorative dining table - customers sit here"""
     
     def __init__(self, x, y):
         super().__init__("dining", x, y, "diningtable.png")
+        self.occupied = False  # Track if table is occupied by customer
         
     def interact(self, player):
         """No interaction with dining tables"""
@@ -420,4 +606,45 @@ class DiningTable(Station):
     
     def can_interact(self, player):
         """Dining tables don't have direct interaction"""
+        return False
+    
+class LongTable(Station):
+    """Decorative long table for kitchen"""
+    
+    def __init__(self, x, y, width=None, vertical=False):
+        # Load image dengan custom width jika diberikan
+        if width:
+            base_img = SpriteSheet.load_image("longtable.png", (width, 64))
+        else:
+            base_img = SpriteSheet.load_image("longtable.png", None)
+        
+        # Rotate if vertical
+        if vertical:
+            self.image = pygame.transform.rotate(base_img, 90)
+        else:
+            self.image = base_img
+        
+        # Inisialisasi base Station tanpa load image lagi
+        pygame.sprite.Sprite.__init__(self)
+        self.station_type = "longtable"
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        
+        # Collision rect - hanya objek, tidak termasuk label
+        self.collision_rect = pygame.Rect(
+            self.rect.x,
+            self.rect.y,
+            self.rect.width,
+            self.rect.height
+        )
+        
+        self.current_item = None
+        
+    def interact(self, player):
+        """No interaction with long tables"""
+        return False, "This is a decorative long table."
+    
+    def can_interact(self, player):
+        """Long tables don't have direct interaction"""
         return False
