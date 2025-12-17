@@ -147,4 +147,7 @@ Kami mengucapkan terima kasih kepada Bapak Rizky Januar Akbar, S.Kom., M.Eng. se
 Proyek ini dikembangkan untuk keperluan akademik sebagai tugas akhir mata kuliah Pemrograman Berorientasi Objek.
 
 
+## Collaborators
 
+- Nazhif Berlian Nasarullah (5054241035)
+- Jeremy Mattathias Mboe (5054241012) 
