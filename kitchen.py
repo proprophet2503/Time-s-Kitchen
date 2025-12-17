@@ -1,7 +1,3 @@
-"""
-Kitchen and gameplay management for Time's Kitchen game
-"""
-
 import pygame
 import random
 from settings import *
@@ -10,9 +6,7 @@ from stations import Cooler, Stove, Boiler, AssemblyTable, ServeCounter, MopStat
 from orders import OrderManager
 
 
-class Kitchen:
-    """Main kitchen/gameplay area management"""
-    
+class Kitchen:    
     def __init__(self, num_players=1, perks=None):
         self.num_players = num_players
         self.perks = perks if perks else {}
@@ -22,8 +16,8 @@ class Kitchen:
         self.wood_floor_tile = SpriteSheet.load_image("tile2.png", (TILE_SIZE, TILE_SIZE))
         
         # Load road image (large, single image)
-        road_width = 400  # Width of road area
-        road_height = SCREEN_HEIGHT - 70  # Height from top bar to bottom
+        road_width = 400  
+        road_height = SCREEN_HEIGHT - 70  
         self.road_image = SpriteSheet.load_image("road.png", (road_width, road_height))
         
         # Initialize sprite groups
@@ -38,7 +32,7 @@ class Kitchen:
         self.tenants = pygame.sprite.Group()
         self.storeboards = pygame.sprite.Group()
         self.bushes = pygame.sprite.Group()
-        self.mops = pygame.sprite.Group()  # Mops that can be picked up
+        self.mops = pygame.sprite.Group()  
         
         # Create kitchen layout
         self._setup_stations()
@@ -68,26 +62,17 @@ class Kitchen:
         self.customer_spawn_y = 0
         
     def _setup_stations(self):
-        """Set up all kitchen stations based on reference layout"""
-        # Layout based on reference image:
-        # Left side: Cooler (refrigerator) + ingredient shelves
-        # Top center: Stove and Boiler for cooking
-        # Right side: Serve counter with cashier
-        # Middle: Assembly tables
-        # Bottom: Dining tables
+        # shows menu on click Cooler for meat/sausage 
+        self.cooler = Cooler(5, 68, ItemType.MEAT) 
         
-        # === LEFT SIDE - Ingredient Storage ===
-        # Single Cooler for meat/sausage (shows menu on click)
-        self.cooler = Cooler(5, 68, ItemType.MEAT)  # Main cooler
-        
-        # Ingredient tables for bread and pasta (upper row)
+        # Ingredient tables for bread and pasta
         table_bread = IngredientTable(150, 290, ItemType.BREAD)
         table_pasta = IngredientTable(215, 290, ItemType.PASTA)
 
         self.stations.add(self.cooler, table_bread, table_pasta)
         self.all_sprites.add(self.cooler, table_bread, table_pasta)
         
-        # Lettuce and Sauce stations for making salad (lower row)
+        # Lettuce and Sauce stations for making salad 
         lettuce_station = LettuceStation(150, 470)
         sauce_station = SauceStation(215, 470)
         self.stations.add(lettuce_station, sauce_station)
@@ -95,9 +80,8 @@ class Kitchen:
         
         # Cooler menu state
         self.show_cooler_menu = False
-        self.cooler_menu_player = None  # Track which player opened the menu
+        self.cooler_menu_player = None 
         
-        # === TOP CENTER - Cooking Area ===
         # Stoves for meat and sausage
         stove1 = Stove(125, 95)
         stove2 = Stove(220, 95)
@@ -112,38 +96,38 @@ class Kitchen:
         self.all_sprites.add(boiler1, boiler2)
         self.boilers = [boiler1, boiler2]
         
-        # === RIGHT SIDE - Serve Counter ===
+        # Cashier Counter
         self.serve_counter = ServeCounter(550, 95)
         self.stations.add(self.serve_counter)
         self.all_sprites.add(self.serve_counter)
         
-        # === MIDDLE - Assembly Tables ===
+        # Assembly Tables
         assembly1 = AssemblyTable(475, 335)
         assembly2 = AssemblyTable(475, 390)
         self.stations.add(assembly1, assembly2)
         self.all_sprites.add(assembly1, assembly2)
         self.assembly_tables = [assembly1, assembly2]
 
-        # === MOP Station ===
+        # MOP Station
         self.mop_station = MopStation(15, 580)
         self.stations.add(self.mop_station)
         self.all_sprites.add(self.mop_station)
         
-        # === BOTTOM - Dining Tables 
+        # Dining Tables 
         dining_positions = [
-            (900, 220), (900, 320), (900, 420), # Right column
-            (750, 220), (750, 320), (750, 420) # Second column from right
+            (900, 220), (900, 320), (900, 420), 
+            (750, 220), (750, 320), (750, 420) 
         ]
         for x, y in dining_positions:
             table = DiningTable(x, y)
             self.dining_tables.add(table)
             self.all_sprites.add(table)
 
-        # Long tables - horizontal and vertical
-        longtable1 = LongTable(-25, 670, 550)  # Horizontal bottom
-        longtable2 = LongTable(450, 670, 158)  # Horizontal bottom right
-        longtable3 = LongTable(550, 100, 415, vertical=True)  # Vertical right side
-        longtable4 = LongTable(550, 20, 100, vertical=True)  # Vertical left side
+        # Long tables
+        longtable1 = LongTable(-25, 670, 550)  
+        longtable2 = LongTable(450, 670, 158)  
+        longtable3 = LongTable(550, 100, 415, vertical=True)  
+        longtable4 = LongTable(550, 20, 100, vertical=True) 
         
         for lt in [longtable1, longtable2, longtable3, longtable4]:
             self.longtables.add(lt)
@@ -156,11 +140,10 @@ class Kitchen:
         self.cooking_stations = self.stoves + self.boilers
         
     def _setup_players(self):
-        """Set up player(s)"""
         # Apply speed perk if purchased
         speed_boost = self.perks.get("speed_boost", 0)
         
-        # Player 1 starts in kitchen area, left side near cooking stations
+        # Player 1 starts in kitchen area
         player1 = Player(1, 200, 200, speed_boost=speed_boost, 
                         holding_boost=self.perks.get("holding_boost", 0))
         self.players.add(player1)
@@ -174,13 +157,10 @@ class Kitchen:
             self.all_sprites.add(player2)
     
     def _setup_cashier(self):
-        """Set up the cashier NPC"""
-        # Cashier stands next to serve counter
         self.cashier = Cashier(500, 95)
     
     def _setup_pedestrians(self):
-        """Set up pedestrian NPCs walking on the road"""
-        road_start_x = SCREEN_WIDTH - 400  # Road starts here
+        road_start_x = SCREEN_WIDTH - 400  
         
         # Create 3-4 pedestrians at different positions walking in different directions
         pedestrian_positions = [
@@ -196,38 +176,35 @@ class Kitchen:
             self.all_sprites.add(ped)
     
     def _setup_tenants(self):
-        """Set up tenant decorations on roadside"""
-        road_start_x = SCREEN_WIDTH - 70  # Road starts here
+        road_start_x = SCREEN_WIDTH - 70  
         
-        # Place one tenant beside the road
+        # Place tenant 
         tenant = Tenant(road_start_x - 10, 145)
         tenant2 = Tenant(road_start_x - 130, 250)
         self.tenants.add(tenant)
         self.tenants.add(tenant2)
     
     def _setup_storeboards(self):
-        """Set up storeboard decorations"""
-        road_start_x = SCREEN_WIDTH - 188  # Road starts here
+        road_start_x = SCREEN_WIDTH - 188  
         
-        # Place one storeboard beside the tenant
+        # Place storeboard 
         storeboard = Storeboard(road_start_x - 10, 420)
         self.storeboards.add(storeboard)
         self.all_sprites.add(storeboard)
     def _setup_bushes(self):
-        """Set up bush decorations - multiple bushes arranged vertically"""
-        road_start_x = SCREEN_WIDTH - 250  # Road starts here
+        road_start_x = SCREEN_WIDTH - 250 
         
-        # Create multiple bushes arranged vertically (total height ~415 like longtable)
+        # Create multiple bushes 
         bush_positions = [
             (road_start_x - 450, 28, 85),
-            (road_start_x - 450, 148, 120),   # Top bush
-            (road_start_x - 450, 200, 120),   # Middle bush
-            (road_start_x - 450, 250, 120),   # Lower middle bush
+            (road_start_x - 450, 148, 120),   
+            (road_start_x - 450, 200, 120),   
+            (road_start_x - 450, 250, 120),   
             (road_start_x - 450, 300, 85),
             (road_start_x - 450, 350, 85),
             (road_start_x - 450, 400, 85),
             (road_start_x - 450, 420, 85),
-            (road_start_x - 450, 665, 85),     # Bottom bush (shorter)
+            (road_start_x - 450, 665, 85),     
         ]
         
         for x, y, height in bush_positions:
@@ -236,14 +213,10 @@ class Kitchen:
             self.all_sprites.add(bush)
     
     def _setup_mops(self):
-        """Set up mop stations - mops that can be picked up"""
-        # Place mop near the mop station
         mop1 = Mop(30, 595)
         self.mops.add(mop1)
-        # Don't add to all_sprites - we draw mops separately with their draw() method
     
     def _on_new_order(self, order):
-        """Callback when new order is created"""
         self.cashier.announce_order(order.name)
         
         # Find available dining table
@@ -264,16 +237,14 @@ class Kitchen:
             self.serve_counter.rect.y + 20,
             order,
             line_position,
-            available_table  # Pass dining table to customer
+            available_table  
         )
         self.customers.add(customer)
         
-        # Link order to customer and table
         order.customer = customer
         order.dining_table = available_table
     
     def _update_customer_line(self):
-        """Update customer positions in the waiting line"""
         waiting_customers = [c for c in self.customers if c.state in ["arriving", "waiting"]]
         waiting_customers.sort(key=lambda c: c.line_position)
         
@@ -283,9 +254,7 @@ class Kitchen:
                 customer.update_line_position(i, new_x)
     
     def _spawn_dirt(self):
-        """Spawn dirt spots near cooking stations"""
         if len(self.dirt_spots) < MAX_DIRT_SPOTS and self.cooking_stations:
-            # Choose random cooking station
             station = random.choice(self.cooking_stations)
             
             # Spawn dirt in front of station
@@ -302,14 +271,11 @@ class Kitchen:
             self.show_message("Kitchen is getting dirty!")
     
     def show_message(self, msg, duration=120):
-        """Show a temporary message"""
         self.message = msg
         self.message_timer = duration
     
     def handle_input(self, event):
-        """Handle player input events"""
         if event.type == pygame.KEYDOWN:
-            # Handle cooler menu selection
             if self.show_cooler_menu:
                 if event.key == pygame.K_1:
                     self._select_from_cooler(ItemType.MEAT, self.cooler_menu_player)
@@ -344,19 +310,17 @@ class Kitchen:
                     self._player_drop(1)
     
     def _get_player(self, index):
-        """Get player by index"""
         players_list = list(self.players)
         if index < len(players_list):
             return players_list[index]
         return None
     
     def _player_interact(self, player_index):
-        """Handle player interaction with stations"""
         player = self._get_player(player_index)
         if not player:
             return
         
-        # Check for mop pickup first
+        # Check for mop pickup 
         for mop in self.mops:
             if not mop.is_held:
                 distance = ((mop.rect.centerx - player.rect.centerx) ** 2 + 
@@ -364,7 +328,7 @@ class Kitchen:
                 if distance < 80:
                     if player.pickup_mop(mop):
                         mop.is_held = True
-                        mop.holder = player  # Set holder reference
+                        mop.holder = player  
                         self.show_message("Picked up mop! Press SPACE near dirt to clean")
                         return
         
@@ -385,7 +349,7 @@ class Kitchen:
         # Check for cooler interaction (show menu)
         if self.cooler.can_interact(player):
             self.show_cooler_menu = True
-            self.cooler_menu_player = player_index  # Store which player opened the menu
+            self.cooler_menu_player = player_index  
             return
         
         # Check for other station interactions
@@ -399,7 +363,6 @@ class Kitchen:
         self.show_message("Nothing to interact with")
     
     def _player_serve(self, player_index):
-        """Handle player serving a dish directly to customer at table"""
         player = self._get_player(player_index)
         if not player:
             return
@@ -421,12 +384,9 @@ class Kitchen:
                 distance = ((customer.rect.centerx - player.rect.centerx) ** 2 + 
                            (customer.rect.centery - player.rect.centery) ** 2) ** 0.5
                 
-                if distance < 80:  # Within serving range
-                    # Check if customer ordered this dish
+                if distance < 80:  
                     if customer.can_receive_delivery(held_dish.item_type):
-                        # Try to fulfill the order
                         success, reward, completed_order = self.order_manager.try_fulfill_order(held_dish.item_type)
-                        
                         if success:
                             # Remove dish from player
                             player.held_items.remove(held_dish)
@@ -455,7 +415,6 @@ class Kitchen:
         self.show_message("No customer nearby!")
     
     def _player_drop(self, player_index):
-        """Handle player dropping an item or mop"""
         player = self._get_player(player_index)
         if not player:
             return
@@ -468,7 +427,7 @@ class Kitchen:
                 mop.rect.x = player.rect.x
                 mop.rect.y = player.rect.y + player.rect.height
                 mop.is_held = False
-                mop.holder = None  # Clear holder reference
+                mop.holder = None  
                 self.show_message("Dropped mop")
                 return
         
@@ -480,7 +439,6 @@ class Kitchen:
             self.show_message("Nothing to drop")
     
     def _select_from_cooler(self, item_type, player_index=0):
-        """Give the player who opened menu an item from the cooler menu"""
         player = self._get_player(player_index)
         if not player:
             return
@@ -495,8 +453,6 @@ class Kitchen:
             self.show_message("Hands full!")
     
     def update(self, dt):
-        """Update all game elements"""
-        # Update time
         self.time_remaining -= dt
         if self.time_remaining < 0:
             self.time_remaining = 0
@@ -512,10 +468,8 @@ class Kitchen:
             self._spawn_dirt()
         
         # Get pressed keys
-        # Get pressed keys
         keys = pygame.key.get_pressed()
         
-        # Update players
         # Include stations, long tables, and dining tables as obstacles
         obstacles = [s for s in self.stations] + list(self.longtables) + list(self.dining_tables)
         for player in self.players:
@@ -553,24 +507,21 @@ class Kitchen:
                 self.message = ""
     
     def draw(self, screen):
-        """Draw the kitchen"""
-        # Draw floor tiles starting after top bar
-        dining_area_x = 600  # Start of dining area (wood floor) - must be multiple of TILE_SIZE (200)
+        dining_area_x = 600 
         
         for x in range(0, SCREEN_WIDTH, TILE_SIZE):
             for y in range(70, SCREEN_HEIGHT, TILE_SIZE):
-                # Use wood floor for dining area on the right
                 if x >= dining_area_x:
                     screen.blit(self.wood_floor_tile, (x, y))
                 else:
                     screen.blit(self.floor_tile, (x, y))
         
-        # Draw road on top of wood floor (right side)
-        road_x = SCREEN_WIDTH - 260  # Position road on the right edge
-        road_y = 120  # Start from top bar
+        # Draw road on top of wood floor 
+        road_x = SCREEN_WIDTH - 260  
+        road_y = 120  
         screen.blit(self.road_image, (road_x, road_y))
         
-        # Draw dining tables first (background)
+        # Draw dining tables 
         for table in self.dining_tables:
             screen.blit(table.image, table.rect)
 
@@ -613,7 +564,7 @@ class Kitchen:
         # Draw cashier
         self.cashier.draw(screen)
         
-        # Draw players (on top of everything)
+        # Draw players 
         for player in self.players:
             player.draw(screen)
         
@@ -622,7 +573,6 @@ class Kitchen:
             self._draw_cooler_menu(screen)
     
     def _draw_cooler_menu(self, screen):
-        """Draw the cooler menu overlay"""
         WIDTH, HEIGHT = SCREEN_WIDTH, SCREEN_HEIGHT
         box_width, box_height = 500, 260
         box_x, box_y = WIDTH//2 - box_width//2, HEIGHT//2 - box_height//2
@@ -661,22 +611,18 @@ class Kitchen:
         screen.blit(glow_surface, (box_x, box_y))
     
     def draw_orders(self, screen):
-        """Draw the order queue in top bar"""
-        self.order_manager.draw(screen, 0, 0)  # Orders drawn in top bar
+        self.order_manager.draw(screen, 0, 0)  
     
     def get_message(self):
-        """Get current message and alpha for display"""
         if self.message_timer > 0:
             alpha = min(255, self.message_timer * 4)
             return self.message, alpha
         return None, 0
     
     def is_game_over(self):
-        """Check if game is over"""
         return self.time_remaining <= 0
     
     def get_stats(self):
-        """Get game statistics"""
         return {
             'score': self.score,
             'time_remaining': self.time_remaining,

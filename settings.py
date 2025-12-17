@@ -1,7 +1,3 @@
-"""
-Settings and constants for Time's Kitchen game
-"""
-
 # Screen settings
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -33,12 +29,12 @@ GAME_DURATION = 360  # 6 minutes = 360 seconds
 GAME_HOUR = 60  # 1 game hour = 60 real seconds (1 minute)
 ORDER_TIMEOUT = 30  # Seconds before order expires
 
-# Cooking times (in seconds)
+# Cooking times 
 COOK_TIME_MEAT = 5
 COOK_TIME_SAUSAGE = 4
 COOK_TIME_PASTA = 7
 
-# Rewards (in dollars)
+# Rewards 
 REWARD_BURGER = 10
 REWARD_HOTDOG = 8
 REWARD_PASTA = 6
@@ -50,9 +46,9 @@ ORDERS_PER_HOUR_SINGLE = 5
 ORDERS_PER_HOUR_MULTI = 10
 
 # Player settings
-PLAYER_SPEED = 2.3
-PLAYER_SIZE = 80  # Default size (used by Player 2, NPCs, Customers)
-PLAYER1_SIZE = 120  # Player 1 specific size (set same as PLAYER_SIZE to match Player 2)
+PLAYER_SPEED = 2.7
+PLAYER_SIZE = 80  
+PLAYER1_SIZE = 120 
 
 # Station settings
 STATION_SIZE = 90
@@ -67,7 +63,7 @@ ITEM_SIZE = 48
 CUSTOMER_SPEED = 3
 
 # Dirt settings
-DIRT_SPAWN_INTERVAL = 60  # Spawn dirt every 60 seconds (1 game hour)
+DIRT_SPAWN_INTERVAL = 60  
 MAX_DIRT_SPOTS = 5
 
 # Asset paths
@@ -80,8 +76,8 @@ class ItemType:
     MEAT = "meat"
     SAUSAGE = "sausage"
     PASTA = "pasta"
-    LETTUCE = "lettuce"  # Changed from SALAD
-    SAUCE = "sauce"  # New ingredient for salad
+    LETTUCE = "lettuce"  
+    SAUCE = "sauce"  
     
     # Cooked ingredients
     COOKED_MEAT = "cooked_meat"
@@ -103,7 +99,7 @@ class StationType:
     STOVE = "stove"
     BOILER = "boiler"
     ASSEMBLY = "assembly"
-    SAUCE = "sauce"  # New sauce station
+    SAUCE = "sauce"  
     SERVE = "serve"
     MOP = "mop"
 

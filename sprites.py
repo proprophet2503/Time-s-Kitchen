@@ -1,20 +1,13 @@
-"""
-Sprite and Item classes for Time's Kitchen game
-"""
-
 import pygame
 import os
 from settings import *
 
 
 class SpriteSheet:
-    """Utility class to load and manage game sprites"""
-    
     _cache = {}
     
     @classmethod
     def load_image(cls, filename, size=None):
-        """Load an image from assets folder with optional resizing"""
         if filename in cls._cache:
             img = cls._cache[filename]
         else:
@@ -24,7 +17,6 @@ class SpriteSheet:
                 cls._cache[filename] = img
             except pygame.error as e:
                 print(f"Cannot load image: {path}")
-                # Create placeholder
                 img = pygame.Surface((64, 64))
                 img.fill(RED)
                 
@@ -34,8 +26,6 @@ class SpriteSheet:
 
 
 class Item(pygame.sprite.Sprite):
-    """Represents an item/ingredient in the game"""
-    
     ITEM_IMAGES = {
         ItemType.BREAD: "bread.png",
         ItemType.MEAT: "meat.png",
@@ -48,7 +38,7 @@ class Item(pygame.sprite.Sprite):
         ItemType.BOILED_PASTA: "boiled_pasta.png",
         ItemType.BURGER: "burger.png",
         ItemType.HOTDOG: "hot dog.png",
-        ItemType.PASTA_DISH: "boiled_pasta.png", # Use boiled pasta for dish
+        ItemType.PASTA_DISH: "boiled_pasta.png", 
         ItemType.SALAD_DISH: "salad.png",
         ItemType.MOP: "mop.png",
     }
@@ -62,12 +52,10 @@ class Item(pygame.sprite.Sprite):
         self.rect.y = y
         
     def _load_image(self):
-        """Load the appropriate image for this item type"""
         filename = self.ITEM_IMAGES.get(self.item_type, "bread.png")
         return SpriteSheet.load_image(filename, (ITEM_SIZE, ITEM_SIZE))
     
     def get_display_name(self):
-        """Get human-readable name for the item"""
         names = {
             ItemType.BREAD: "Bread",
             ItemType.MEAT: "Raw Meat",
@@ -88,13 +76,11 @@ class Item(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    """Player character class"""
-    
     def __init__(self, player_num=1, x=0, y=0, speed_boost=0, holding_boost=0):
         super().__init__()
         self.player_num = player_num
-        self.speed = PLAYER_SPEED + speed_boost  # Apply speed perk
-        self.max_items = 3 + holding_boost  # Apply holding perk (default 3, can be 4)
+        self.speed = PLAYER_SPEED + speed_boost  
+        self.max_items = 3 + holding_boost  
         
         # Load appropriate sprite
         if player_num == 1:
@@ -108,32 +94,28 @@ class Player(pygame.sprite.Sprite):
         
         # Item being held
         self.held_item = None
-        self.held_items = []  # For assembly - can hold multiple items
+        self.held_items = []  
         
         # Mop handling
         self.holding_mop = False
-        self.mop_object = None  # Reference to the mop object
+        self.mop_object = None  
         
         # Cleaning animation
         self.is_cleaning = False
         self.cleaning_timer = 0
-        self.cleaning_duration = 60  # frames (1 second at 60 FPS)
+        self.cleaning_duration = 60  
         self.clean_sway_offset = 0
         self.sway_direction = 1
-        self.cleaning_dirt = None  # Reference to dirt being cleaned
-        self.cleaning_complete = False  # Flag for when cleaning animation finishes
         
         # Movement direction for rendering
         self.direction = "down"
         
-        # Collision rect (smaller than sprite for better gameplay)
-        # Player 1 has smaller collision due to larger sprite size
         if player_num == 1:
-            collision_offset_x = 45  # Horizontal offset for player 1
-            collision_offset_y = 25  # Vertical offset for player 1
+            collision_offset_x = 45  
+            collision_offset_y = 25  
         else:
-            collision_offset_x = 15  # Standard horizontal offset for player 2
-            collision_offset_y = 15  # Standard vertical offset for player 2
+            collision_offset_x = 15  
+            collision_offset_y = 15  
             
         self.collision_rect = pygame.Rect(
             self.rect.x + collision_offset_x,
@@ -143,19 +125,16 @@ class Player(pygame.sprite.Sprite):
         )
         
     def update(self, keys, obstacles=None):
-        """Update player position based on input"""
-        # If cleaning animation is active, handle it
         if self.is_cleaning:
             self.cleaning_timer += 1
-            # Sway animation - move left and right
+            # Sway animation move left and right
             self.clean_sway_offset = int(10 * pygame.math.Vector2(1, 0).rotate(self.cleaning_timer * 10).x)
             
             if self.cleaning_timer >= self.cleaning_duration:
-                # Cleaning animation complete - set flag for kitchen to handle
+                # Cleaning animation complete
                 self.is_cleaning = False
                 self.cleaning_timer = 0
                 self.clean_sway_offset = 0
-                self.cleaning_complete = True  # Flag for kitchen to check
             return  # Don't allow movement during cleaning
         
         dx, dy = 0, 0
@@ -208,12 +187,12 @@ class Player(pygame.sprite.Sprite):
         self.collision_rect.x = self.rect.x + collision_offset_x
         self.collision_rect.y = self.rect.y + collision_offset_y
         
-        # Check boundaries - adjusted for smaller screen
+        # Check boundaries 
         if self.rect.x < 0:
             self.rect.x = 0
         if self.rect.x > SCREEN_WIDTH - self.rect.width:
             self.rect.x = SCREEN_WIDTH - self.rect.width
-        if self.rect.y < 70:  # Leave space for UI at top
+        if self.rect.y < 70:  
             self.rect.y = 70
         if self.rect.y > SCREEN_HEIGHT - self.rect.height - 10:
             self.rect.y = SCREEN_HEIGHT - self.rect.height - 10
@@ -238,23 +217,14 @@ class Player(pygame.sprite.Sprite):
         self.collision_rect.x = self.rect.x + collision_offset_x
         self.collision_rect.y = self.rect.y + collision_offset_y
     
-    def start_cleaning(self, dirt=None):
-        """Start the cleaning animation"""
+    def start_cleaning(self):
         if self.holding_mop and not self.is_cleaning:
             self.is_cleaning = True
             self.cleaning_timer = 0
-            self.cleaning_dirt = dirt  # Store reference to dirt being cleaned
             return True
         return False
     
-    def finish_cleaning(self):
-        """Finish cleaning and return the cleaned dirt"""
-        dirt = getattr(self, 'cleaning_dirt', None)
-        self.cleaning_dirt = None
-        return dirt
-    
     def pickup_mop(self, mop):
-        """Pick up the mop"""
         if not self.holding_mop:
             self.holding_mop = True
             self.mop_object = mop
@@ -262,7 +232,6 @@ class Player(pygame.sprite.Sprite):
         return False
     
     def drop_mop(self):
-        """Drop the mop at current location"""
         if self.holding_mop:
             mop = self.mop_object
             self.holding_mop = False
@@ -271,39 +240,32 @@ class Player(pygame.sprite.Sprite):
         return None
     
     def pickup_item(self, item):
-        """Pick up an item"""
-        if len(self.held_items) < self.max_items:  # Use max_items instead of hardcoded 3
+        if len(self.held_items) < self.max_items:  
             self.held_items.append(item)
             return True
         return False
     
     def drop_item(self):
-        """Drop the last held item"""
         if self.held_items:
             return self.held_items.pop()
         return None
     
     def has_item(self, item_type):
-        """Check if player has a specific item type"""
         for item in self.held_items:
             if item.item_type == item_type:
                 return True
         return False
     
     def remove_item(self, item_type):
-        """Remove a specific item type from held items"""
         for i, item in enumerate(self.held_items):
             if item.item_type == item_type:
                 return self.held_items.pop(i)
         return None
     
     def get_held_item_names(self):
-        """Get list of held item names"""
         return [item.get_display_name() for item in self.held_items]
     
     def draw(self, screen):
-        """Draw the player and held items clearly visible"""
-        # Apply sway offset during cleaning animation
         draw_x = self.rect.x + self.clean_sway_offset
         draw_rect = pygame.Rect(draw_x, self.rect.y, self.rect.width, self.rect.height)
         
@@ -318,15 +280,13 @@ class Player(pygame.sprite.Sprite):
             mop_img = SpriteSheet.load_image("mop.png", (30, 50))
             screen.blit(mop_img, (mop_x, mop_y))
             
-            # Show "Cleaning..." text if cleaning
             if self.is_cleaning:
                 font = pygame.font.Font(None, 18)
                 clean_text = font.render("Cleaning...", True, (255, 255, 0))
                 screen.blit(clean_text, (self.rect.centerx - 30, self.rect.top - 15))
         
-        # Draw held items above player head - clearly visible
+        # Draw held items above player head
         if self.held_items:
-            # Calculate starting position for held items
             total_width = len(self.held_items) * 35
             start_x = self.rect.centerx - total_width // 2
             
@@ -357,8 +317,6 @@ class Player(pygame.sprite.Sprite):
 
 
 class Customer(pygame.sprite.Sprite):
-    """Customer that comes to order food with animations"""
-    
     def __init__(self, target_x, target_y, order=None, line_position=0, dining_table=None):
         super().__init__()
         self.base_image = SpriteSheet.load_image("customer.png", (PLAYER_SIZE, PLAYER_SIZE))
@@ -374,7 +332,7 @@ class Customer(pygame.sprite.Sprite):
         self.order = order
         self.line_position = line_position
         self.dining_table = dining_table
-        self.ordered_item = order.dish_type if order else None  # Track what dish they ordered
+        self.ordered_item = order.dish_type if order else None  
         
         # States: arriving, waiting, receiving_food, leaving_happy, leaving_corner
         self.state = "arriving"
@@ -382,7 +340,7 @@ class Customer(pygame.sprite.Sprite):
         
         # Eating timer
         self.eating_timer = 0
-        self.eating_duration = 3.0  # Seconds to eat
+        self.eating_duration = 3.0  
         
         # Animation properties
         self.bob_timer = 0
@@ -393,12 +351,11 @@ class Customer(pygame.sprite.Sprite):
         self.held_food = None
         self.food_image = None
         
-        # Corner exit position (bottom-right corner)
+        # Corner exit position
         self.corner_x = SCREEN_WIDTH - 60
         self.corner_y = SCREEN_HEIGHT - 100
         
     def update(self, dt=1/60):
-        """Update customer position and animations"""
         if self.state == "arriving":
             # Walk to cashier first
             if self.rect.x > self.target_x:
@@ -409,13 +366,13 @@ class Customer(pygame.sprite.Sprite):
                 if self.dining_table:
                     self.state = "going_to_table"
                 else:
-                    self.state = "waiting"  # Fallback
+                    self.state = "waiting" 
                 
         elif self.state == "going_to_table":
             # Walk to assigned dining table
             if self.dining_table:
                 table_x = self.dining_table.rect.x
-                table_y = self.dining_table.rect.y - 20  # Sit slightly above table
+                table_y = self.dining_table.rect.y - 20  
                 
                 dx = table_x - self.rect.x
                 dy = table_y - self.rect.y
@@ -430,7 +387,7 @@ class Customer(pygame.sprite.Sprite):
                     self.rect.y = table_y
                     self.state = "sitting"
             else:
-                self.state = "waiting"  # Fallback
+                self.state = "waiting"
                 
         elif self.state == "sitting":
             # Bobbing animation while waiting for food
@@ -438,7 +395,7 @@ class Customer(pygame.sprite.Sprite):
             self.bob_offset = int(2 * abs(pygame.math.Vector2(0, 1).rotate(self.bob_timer * 60).y))
             
         elif self.state == "eating":
-            # Eating animation - stay at table
+            # stay at table
             self.eating_timer += dt
             self.bob_timer += self.wait_animation_speed * 1.5
             self.bob_offset = int(4 * abs(pygame.math.Vector2(0, 1).rotate(self.bob_timer * 60).y))
@@ -447,7 +404,7 @@ class Customer(pygame.sprite.Sprite):
                 self.state = "leaving"
                 
         elif self.state == "waiting":
-            # Bobbing animation while waiting (legacy state)
+            # Bobbing animation while waiting 
             self.bob_timer += self.wait_animation_speed
             self.bob_offset = int(3 * abs(pygame.math.Vector2(0, 1).rotate(self.bob_timer * 60).y))
             
@@ -487,7 +444,6 @@ class Customer(pygame.sprite.Sprite):
                 self.kill()
     
     def serve(self, food_image=None):
-        """Customer has been served, start leaving with food"""
         self.held_food = True
         self.food_image = food_image
         self.state = "receiving_food"
@@ -496,26 +452,21 @@ class Customer(pygame.sprite.Sprite):
         return self.state in ["sitting", "waiting"]
     
     def can_receive_delivery(self, item_type):
-        """Check if customer can receive this item"""
         return self.state == "sitting" and self.ordered_item == item_type
     
     def receive_delivery(self, food_image=None):
-        """Customer receives their order at the table"""
         self.held_food = True
         self.food_image = food_image
         self.state = "receiving_food"
         return True
     
     def update_line_position(self, new_position, new_target_x):
-        """Update position in the waiting line"""
         self.line_position = new_position
         self.target_x = new_target_x
         if self.state == "waiting" and self.rect.x != new_target_x:
-            self.state = "arriving"  # Move to new position
+            self.state = "arriving"  
     
     def draw(self, screen):
-        """Draw customer with animations and held food"""
-        # Apply bobbing offset if waiting
         draw_y = self.rect.y - self.bob_offset if self.state == "waiting" else self.rect.y
         
         # Draw customer
@@ -548,7 +499,7 @@ class Customer(pygame.sprite.Sprite):
                 dish_img = pygame.transform.scale(self.order.image, (40, 40))
                 screen.blit(dish_img, (bubble_x + 5, bubble_y + 5))
         
-        # Draw held food above head if carrying (after eating)
+        # Draw held food above head if carrying 
         if self.held_food and self.food_image:
             food_x = self.rect.centerx - 15
             food_y = draw_y - 35
@@ -563,7 +514,7 @@ class Customer(pygame.sprite.Sprite):
             small_food = pygame.transform.scale(self.food_image, (30, 30))
             screen.blit(small_food, (food_x, food_y))
         
-        # Draw waiting indicator (small dots based on wait time)
+        # Draw waiting indicator 
         if self.state == "waiting" and self.order:
             # Draw order number above customer
             font = pygame.font.Font(None, 18)
@@ -574,8 +525,6 @@ class Customer(pygame.sprite.Sprite):
 
 
 class Cashier(pygame.sprite.Sprite):
-    """NPC Cashier at the counter"""
-    
     def __init__(self, x, y):
         super().__init__()
         self.image = SpriteSheet.load_image("NPC.png", (PLAYER_SIZE, PLAYER_SIZE))
@@ -588,17 +537,14 @@ class Cashier(pygame.sprite.Sprite):
         self.message_timer = 0
         
     def announce_order(self, order_name):
-        """Announce a new order"""
         self.current_message = f"Order: {order_name}!"
-        self.message_timer = 180  # Show for 3 seconds at 60 FPS
+        self.message_timer = 180  
         
     def update(self):
-        """Update message timer"""
         if self.message_timer > 0:
             self.message_timer -= 1
             
     def draw(self, screen):
-        """Draw cashier and speech bubble"""
         screen.blit(self.image, self.rect)
         
         # Draw speech bubble if there's a message
@@ -620,31 +566,28 @@ class Cashier(pygame.sprite.Sprite):
             screen.blit(text, bubble_rect)
 
 class LongTable(pygame.sprite.Sprite):
-    """Static long table that separates kitchen and customer area"""
-
     def __init__(self, x, y, width=None):
         super().__init__()
 
         if "longtable.png" in SpriteSheet._cache:
             del SpriteSheet._cache["longtable.png"]
         
-        # Load image dengan custom width jika diberikan
         if width:
             self.image = SpriteSheet.load_image(
                 "longtable.png",
-                (width, 100)  # Custom width dengan height 100px (diperbesar)
+                (width, 100)  
             )
         else:
             self.image = SpriteSheet.load_image(
                 "longtable.png",
-                None  # Gunakan ukuran asli PNG
+                None  
             )
 
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
 
-        # COLLISION (player tidak bisa tembus)
+        # COLLISION 
         self.collision_rect = pygame.Rect(
             self.rect.x,
             self.rect.y,
@@ -653,8 +596,6 @@ class LongTable(pygame.sprite.Sprite):
         )
 
 class Mop(pygame.sprite.Sprite):
-    """Mop tool that can be picked up and dropped"""
-    
     def __init__(self, x, y):
         super().__init__()
         self.image = SpriteSheet.load_image("mop.png", (30, 50))
@@ -662,27 +603,19 @@ class Mop(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.is_held = False
-        self.holder = None  # Reference to player holding the mop
+        self.holder = None 
     
     def update(self):
-        """Update mop position if being held"""
         if self.is_held and self.holder:
-            # Move mop position off-screen or with player (won't be drawn anyway)
+            # Move mop position off-screen or with player 
             self.rect.x = self.holder.rect.x + self.holder.rect.width - 10
             self.rect.y = self.holder.rect.y + self.holder.rect.height // 2
     
     def draw(self, screen):
-        """Draw the mop if not being held"""
         if not self.is_held:
             screen.blit(self.image, self.rect)
-        # Debug: print when mop should be hidden
-        # if self.is_held:
-        #     print(f"DEBUG: Mop is held, not drawing at ({self.rect.x}, {self.rect.y})")
-
 
 class DirtSpot(pygame.sprite.Sprite):
-    """Food stain that needs to be cleaned"""
-    
     def __init__(self, x, y):
         super().__init__()
         self.image = SpriteSheet.load_image("food_stain.png", (48, 48))
@@ -691,14 +624,11 @@ class DirtSpot(pygame.sprite.Sprite):
         self.rect.y = y
         
     def clean(self):
-        """Clean this dirt spot"""
         self.kill()
         return REWARD_CLEANING
 
 
 class Pedestrian(pygame.sprite.Sprite):
-    """NPC walking on the road for ambience"""
-    
     def __init__(self, x, y, direction="down"):
         super().__init__()
         self.image = SpriteSheet.load_image("customer.png", (PLAYER_SIZE, PLAYER_SIZE))
@@ -706,30 +636,26 @@ class Pedestrian(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         
-        self.direction = direction  # "up" or "down"
+        self.direction = direction  
         self.speed = 1.5
         
     def update(self, dt=1/60):
-        """Update pedestrian movement"""
         if self.direction == "down":
             self.rect.y += self.speed
             # Reset to top when reaching bottom
             if self.rect.y > SCREEN_HEIGHT:
                 self.rect.y = 50
-        else:  # up
+        else:  
             self.rect.y -= self.speed
             # Reset to bottom when reaching top
             if self.rect.y < 50:
                 self.rect.y = SCREEN_HEIGHT
     
     def draw(self, screen):
-        """Draw the pedestrian"""
         screen.blit(self.image, self.rect)
 
 
 class Tenant(pygame.sprite.Sprite):
-    """Static tenant decoration on the roadside"""
-    
     def __init__(self, x, y):
         super().__init__()
         self.image = SpriteSheet.load_image("tenant.png", (100, 100))
@@ -738,12 +664,9 @@ class Tenant(pygame.sprite.Sprite):
         self.rect.y = y
     
     def draw(self, screen):
-        """Draw the tenant"""
         screen.blit(self.image, self.rect)
 
-
 class Storeboard(pygame.sprite.Sprite):
-    """Static storeboard decoration"""
     
     def __init__(self, x, y):
         super().__init__()
@@ -753,13 +676,10 @@ class Storeboard(pygame.sprite.Sprite):
         self.rect.y = y
     
     def draw(self, screen):
-        """Draw the storeboard"""
         screen.blit(self.image, self.rect)
 
 
 class Bush(pygame.sprite.Sprite):
-    """Static bush decoration"""
-    
     def __init__(self, x, y, height=415):
         super().__init__()
         self.image = SpriteSheet.load_image("bush.png", (80, height))
@@ -768,6 +688,5 @@ class Bush(pygame.sprite.Sprite):
         self.rect.y = y
     
     def draw(self, screen):
-        """Draw the bush"""
         screen.blit(self.image, self.rect)
 

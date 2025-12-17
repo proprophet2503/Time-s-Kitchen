@@ -1,19 +1,12 @@
-"""
-Station classes for Time's Kitchen game
-"""
-
 import pygame
 from settings import *
 from sprites import SpriteSheet, Item
 
 
 class Station(pygame.sprite.Sprite):
-    """Base class for all kitchen stations"""
-    
     def __init__(self, station_type, x, y, image_file, size=None):
         super().__init__()
         self.station_type = station_type
-        # Use custom size if provided, otherwise use default STATION_SIZE
         if size is None:
             size = (STATION_SIZE, STATION_SIZE)
         self.image = SpriteSheet.load_image(image_file, size)
@@ -21,9 +14,7 @@ class Station(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         
-        # Collision rect - tidak termasuk area tulisan di bawah
-        # Hanya objek image saja yang punya collision, diperkecil sedikit
-        collision_offset = 5  # Offset untuk memperkecil collision area
+        collision_offset = 5  
         self.collision_rect = pygame.Rect(
             self.rect.x + collision_offset,
             self.rect.y + collision_offset,
@@ -35,19 +26,15 @@ class Station(pygame.sprite.Sprite):
         self.current_item = None
         
     def can_interact(self, player):
-        """Player can interact only when touching the station"""
         return self.collision_rect.colliderect(player.rect)
     
     def interact(self, player):
-        """Interact with this station - override in subclasses"""
         pass
     
     def update(self, dt=1/60):
-        """Update station state - override in subclasses"""
         pass
     
     def draw(self, screen):
-        """Draw the station and any items on it"""
         screen.blit(self.image, self.rect)
         if self.current_item:
             item_x = self.rect.centerx - ITEM_SIZE // 2
@@ -55,12 +42,8 @@ class Station(pygame.sprite.Sprite):
             screen.blit(self.current_item.image, (item_x, item_y))
 
 
-class Cooler(Station):
-    """Station to get raw ingredients"""
-    
+class Cooler(Station):    
     AVAILABLE_ITEMS = [ItemType.BREAD, ItemType.MEAT, ItemType.SAUSAGE, ItemType.PASTA]
-    
-    # Different images for different items (optional visual distinction)
     ITEM_IMAGES = {
         ItemType.BREAD: "bread.png",
         ItemType.MEAT: "meat.png", 
@@ -69,17 +52,15 @@ class Cooler(Station):
     }
     
     def __init__(self, x, y, item_type):
-        # Use bigger size for cooler (120x120 instead of default STATION_SIZE)
         super().__init__(StationType.COOLER, x, y, "cooler.png", size=(120, 120))
         self.provides_item = item_type
         self.label = self._get_label()
         
         # Load preview image for this ingredient
         preview_file = self.ITEM_IMAGES.get(item_type, "bread.png")
-        self.preview_image = SpriteSheet.load_image(preview_file, (40, 40))  # Bigger preview too
+        self.preview_image = SpriteSheet.load_image(preview_file, (40, 40)) 
         
     def _get_label(self):
-        """Get label for this cooler"""
         labels = {
             ItemType.BREAD: "Bread",
             ItemType.MEAT: "Meat",
@@ -89,7 +70,6 @@ class Cooler(Station):
         return labels.get(self.provides_item, "?")
     
     def interact(self, player):
-        """Give player an ingredient"""
         if len(player.held_items) < 3:
             new_item = Item(self.provides_item)
             player.pickup_item(new_item)
@@ -97,11 +77,10 @@ class Cooler(Station):
         return False, "Hands full!"
     
     def draw(self, screen):
-        """Draw cooler with label and preview"""
         screen.blit(self.image, self.rect)
         
         # Draw ingredient preview on cooler
-        preview_x = self.rect.centerx - 20  # Adjusted for bigger preview
+        preview_x = self.rect.centerx - 20  
         preview_y = self.rect.centery - 20
         screen.blit(self.preview_image, (preview_x, preview_y))
         
@@ -110,7 +89,7 @@ class Cooler(Station):
         text = font.render(self.label, True, WHITE)
         text_rect = text.get_rect(centerx=self.rect.centerx, top=self.rect.bottom + 2)
         
-        # Background for better visibility
+        # Background 
         bg_rect = text_rect.inflate(8, 4)
         pygame.draw.rect(screen, (40, 40, 40), bg_rect)
         pygame.draw.rect(screen, (100, 100, 100), bg_rect, 1)
@@ -118,11 +97,9 @@ class Cooler(Station):
 
 
 class CookingStation(Station):
-    """Base class for cooking stations (Stove, Boiler)"""
-    
     def __init__(self, station_type, x, y, image_file, recipes, label="", size=None):
         super().__init__(station_type, x, y, image_file, size=size)
-        self.recipes = recipes  # Dict of input_item: (output_item, cook_time)
+        self.recipes = recipes  
         self.cooking = False
         self.cook_timer = 0
         self.cook_duration = 0
@@ -130,8 +107,6 @@ class CookingStation(Station):
         self.label = label
         
     def interact(self, player):
-        """Place item to cook or pick up cooked item"""
-        # If cooking is done, pick up the result
         if self.current_item and not self.cooking:
             if len(player.held_items) < 3:
                 player.pickup_item(self.current_item)
@@ -144,7 +119,7 @@ class CookingStation(Station):
         if not self.cooking and not self.current_item:
             for item in player.held_items:
                 if item.item_type in self.recipes:
-                    # Start cooking - remove item from player
+                    # Start cooking 
                     player.held_items.remove(item)
                     self.current_item = item
                     output_type, cook_time = self.recipes[item.item_type]
@@ -162,7 +137,6 @@ class CookingStation(Station):
         return False, "Station busy"
     
     def update(self, dt=1/60):
-        """Update cooking progress"""
         if self.cooking:
             self.cook_timer += dt
             if self.cook_timer >= self.cook_duration:
@@ -172,7 +146,6 @@ class CookingStation(Station):
                 self.output_item_type = None
                 
     def draw(self, screen):
-        """Draw station with cooking progress and label"""
         screen.blit(self.image, self.rect)
         
         # Draw item on station
@@ -224,30 +197,22 @@ class CookingStation(Station):
 
 
 class Stove(CookingStation):
-    """Stove for cooking meat and sausage"""
-    
     def __init__(self, x, y):
         super().__init__(StationType.STOVE, x, y, "stove.png", COOKING_STOVE, "Stove", size=(95, 90))
 
 
 class Boiler(CookingStation):
-    """Boiler for cooking pasta"""
-    
     def __init__(self, x, y):
         super().__init__(StationType.BOILER, x, y, "boiler.png", COOKING_BOILER, "Boiler", size=(95, 90))
 
 
 class AssemblyTable(Station):
-    """Table for assembling dishes"""
-    
     def __init__(self, x, y):
         # Pass custom size directly to parent - no override needed!
         super().__init__(StationType.ASSEMBLY, x, y, "assemble.png", size=(90, 120))
         self.items_on_table = []
         
     def interact(self, player):
-        """Place items or assemble dishes"""
-        # Try to assemble first
         assembled = self._try_assemble()
         if assembled:
             if len(player.held_items) < 3:
@@ -285,7 +250,6 @@ class AssemblyTable(Station):
         return False, "Nothing to do"
     
     def _try_assemble(self):
-        """Try to assemble items into a dish"""
         table_items = [item.item_type for item in self.items_on_table]
         
         for dish_type, recipe in RECIPES.items():
@@ -311,7 +275,6 @@ class AssemblyTable(Station):
         return None
     
     def draw(self, screen):
-        """Draw assembly table with items and label"""
         screen.blit(self.image, self.rect)
         
         # Draw label
@@ -323,7 +286,7 @@ class AssemblyTable(Station):
         screen.blit(text, text_rect)
         
         # Draw items on table
-        for i, item in enumerate(self.items_on_table[:4]):  # Max 4 visible
+        for i, item in enumerate(self.items_on_table[:4]):  
             offset_x = (i % 2) * 30 - 15
             offset_y = (i // 2) * 30 - 15
             item_x = self.rect.centerx - ITEM_SIZE // 2 + offset_x
@@ -332,8 +295,6 @@ class AssemblyTable(Station):
 
 
 class IngredientTable(Station):
-    """Table for ingredient storage (bread, pasta, lettuce)"""
-    
     ITEM_IMAGES = {
         ItemType.BREAD: "bread.png",
         ItemType.PASTA: "pasta.png",
@@ -348,10 +309,9 @@ class IngredientTable(Station):
         # Load preview image for this ingredient (bigger size)
         from sprites import SpriteSheet
         preview_file = self.ITEM_IMAGES.get(item_type, "bread.png")
-        self.preview_image = SpriteSheet.load_image(preview_file, (50, 50))  # Increased from 32 to 50
+        self.preview_image = SpriteSheet.load_image(preview_file, (50, 50))  
     
     def _get_label(self):
-        """Get label for this table"""
         labels = {
             ItemType.BREAD: "Bread",
             ItemType.PASTA: "Pasta",
@@ -360,7 +320,6 @@ class IngredientTable(Station):
         return labels.get(self.provides_item, "?")
     
     def interact(self, player):
-        """Give player an ingredient from the table"""
         if len(player.held_items) < 3:
             new_item = Item(self.provides_item)
             player.pickup_item(new_item)
@@ -368,12 +327,11 @@ class IngredientTable(Station):
         return False, "Hands full!"
     
     def draw(self, screen):
-        """Draw ingredient table with label and preview"""
         screen.blit(self.image, self.rect)
         
-        # Draw ingredient preview on table (centered)
-        preview_x = self.rect.centerx - 25  # Adjusted for 50x50 size
-        preview_y = self.rect.centery - 38  # Moved up by 10 pixels
+        # Draw ingredient preview on table 
+        preview_x = self.rect.centerx - 25  
+        preview_y = self.rect.centery - 38  
         screen.blit(self.preview_image, (preview_x, preview_y))
         
         # Draw label with background
@@ -381,7 +339,7 @@ class IngredientTable(Station):
         text = font.render(self.label, True, WHITE)
         text_rect = text.get_rect(centerx=self.rect.centerx, top=self.rect.bottom + 2)
         
-        # Background for better visibility
+        # Background 
         bg_rect = text_rect.inflate(8, 4)
         pygame.draw.rect(screen, (40, 40, 40), bg_rect)
         pygame.draw.rect(screen, (100, 100, 100), bg_rect, 1)
@@ -406,15 +364,11 @@ class IngredientTable(Station):
 
 
 class ServeCounter(Station):
-    """Counter to serve finished dishes to customers"""
-    
     def __init__(self, x, y):
         super().__init__(StationType.SERVE, x, y, "serve.png")
         self.served_dish = None
         
     def interact(self, player):
-        """Place a finished dish to serve or pick up from counter"""
-        # If there's a dish on counter, pick it up
         if self.served_dish:
             if len(player.held_items) < 3:
                 player.pickup_item(self.served_dish)
@@ -433,7 +387,6 @@ class ServeCounter(Station):
         return False, "No dish to serve!"
     
     def draw(self, screen):
-        """Draw serve counter with label"""
         screen.blit(self.image, self.rect)
         
         # Draw served dish
@@ -443,28 +396,20 @@ class ServeCounter(Station):
             screen.blit(self.served_dish.image, (item_x, item_y))
     
     def get_served_dish(self):
-        """Get and clear the served dish"""
         dish = self.served_dish
         self.served_dish = None
         return dish
 
 
 class MopStation(Station):
-    """Station to get mop for cleaning"""
-    
     def __init__(self, x, y):
-        # Use smaller size for mop (60x60 instead of default STATION_SIZE)
         super().__init__(StationType.MOP, x, y, "mop.png", size=(60, 60))
         self.has_mop = True
         
     def interact(self, player):
-        """Player interacts to toggle mop holding"""
-        # This station represents a mop location
-        # When player has mop (special state), they can clean dirt
         return True, "Ready to clean! Walk to dirt spots."
     
     def draw(self, screen):
-        """Draw mop station with label"""
         screen.blit(self.image, self.rect)
         
         # Draw label
@@ -476,7 +421,6 @@ class MopStation(Station):
         screen.blit(text, text_rect)
     
     def can_clean(self, player, dirt_spots):
-        """Check if player can clean any nearby dirt"""
         for dirt in dirt_spots:
             distance = ((dirt.rect.centerx - player.rect.centerx) ** 2 + 
                        (dirt.rect.centery - player.rect.centery) ** 2) ** 0.5
@@ -486,8 +430,6 @@ class MopStation(Station):
 
 
 class LettuceStation(Station):
-    """Station to get lettuce for making salad"""
-    
     def __init__(self, x, y):
         super().__init__("lettuce", x, y, "assemble.png")
         
@@ -505,12 +447,11 @@ class LettuceStation(Station):
         return False, "Hands full!"
     
     def draw(self, screen):
-        """Draw lettuce station with preview and label"""
         screen.blit(self.image, self.rect)
         
         # Draw preview image on table
         preview_x = self.rect.centerx - 25
-        preview_y = self.rect.centery - 25
+        preview_y = self.rect.centery - 40
         screen.blit(self.preview_image, (preview_x, preview_y))
         
         # Draw label
@@ -523,8 +464,6 @@ class LettuceStation(Station):
 
 
 class SauceStation(Station):
-    """Station to get sauce for making salad"""
-    
     def __init__(self, x, y):
         super().__init__(StationType.SAUCE, x, y, "assemble.png")
         
@@ -533,7 +472,6 @@ class SauceStation(Station):
         self.preview_image = SpriteSheet.load_image("sauce.png", (50, 50))
         
     def interact(self, player):
-        """Pick up sauce"""
         if len(player.held_items) < 3:
             from sprites import Item
             sauce = Item(ItemType.SAUCE, self.rect.x, self.rect.y)
@@ -542,12 +480,11 @@ class SauceStation(Station):
         return False, "Hands full!"
     
     def draw(self, screen):
-        """Draw sauce station with preview and label"""
         screen.blit(self.image, self.rect)
         
         # Draw preview image on table
         preview_x = self.rect.centerx - 25
-        preview_y = self.rect.centery - 25
+        preview_y = self.rect.centery - 40
         screen.blit(self.preview_image, (preview_x, preview_y))
         
         # Draw label
@@ -558,17 +495,11 @@ class SauceStation(Station):
         pygame.draw.rect(screen, (40, 40, 40), bg_rect)
         screen.blit(text, text_rect)
 
-
 class DiningTable(Station):
-    """Decorative dining table - customers sit here"""
-    
     def __init__(self, x, y):
         super().__init__("dining", x, y, "diningtable.png")
-        self.occupied = False  # Track if table is occupied by customer
-        
-        # Create collision border - shrink collision area to create walkable edges
-        # This makes a smaller collision box so players can walk around the table
-        collision_margin = 15  # Pixels of walkable space around the edge
+        self.occupied = False  
+        collision_margin = 15  
         self.collision_rect = pygame.Rect(
             self.rect.x + collision_margin,
             self.rect.y + collision_margin,
@@ -577,37 +508,29 @@ class DiningTable(Station):
         )
         
     def interact(self, player):
-        """No interaction with dining tables"""
         return False, "This is a customer dining table."
     
     def can_interact(self, player):
-        """Dining tables don't have direct interaction"""
         return False
     
 class LongTable(Station):
-    """Decorative long table for kitchen"""
-    
     def __init__(self, x, y, width=None, vertical=False):
-        # Load image dengan custom width jika diberikan
         if width:
             base_img = SpriteSheet.load_image("longtable.png", (width, 64))
         else:
             base_img = SpriteSheet.load_image("longtable.png", None)
-        
-        # Rotate if vertical
         if vertical:
             self.image = pygame.transform.rotate(base_img, 90)
         else:
             self.image = base_img
         
-        # Inisialisasi base Station tanpa load image lagi
         pygame.sprite.Sprite.__init__(self)
         self.station_type = "longtable"
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         
-        # Collision rect - hanya objek, tidak termasuk label
+        # Collision rect 
         self.collision_rect = pygame.Rect(
             self.rect.x,
             self.rect.y,
@@ -618,9 +541,7 @@ class LongTable(Station):
         self.current_item = None
         
     def interact(self, player):
-        """No interaction with long tables"""
         return False, "This is a decorative long table."
     
     def can_interact(self, player):
-        """Long tables don't have direct interaction"""
         return False

@@ -1,12 +1,3 @@
-"""
-Time's Kitchen - Main Game Entry Point
-A 2D Cooking Simulator Game
-
-Controls:
-Player 1: WASD (move), SPACE (interact), E (serve), Q (drop)
-Player 2: Arrow Keys (move), ENTER (interact), . (serve), , (drop)
-"""
-
 import pygame
 import sys
 from settings import *
@@ -16,9 +7,7 @@ from highscore import HighScoreManager
 from store import GameSession
 
 
-class Game:
-    """Main game class managing all game states"""
-    
+class Game:    
     def __init__(self):
         pygame.init()
         pygame.mixer.init()
@@ -30,7 +19,7 @@ class Game:
         self.running = True
         
         # Game state
-        self.state = "menu"  # menu, player_select, how_to_play, high_scores, playing, game_over, store
+        self.state = "menu"  
         self.num_players = 1
         
         # Game session for perks
@@ -48,9 +37,8 @@ class Game:
         self.game_over_screen = None
         
     def run(self):
-        """Main game loop"""
         while self.running:
-            dt = self.clock.tick(FPS) / 1000.0  # Delta time in seconds
+            dt = self.clock.tick(FPS) / 1000.0  
             
             self._handle_events()
             self._update(dt)
@@ -62,7 +50,6 @@ class Game:
         sys.exit()
     
     def _handle_events(self):
-        """Handle all pygame events"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -129,23 +116,21 @@ class Game:
             elif self.state == "store":
                 result = self.game_session.store.handle_input(event)
                 if result == "purchased":
-                    pass  # Just update the display
+                    pass  
                 elif result == "cannot_afford":
-                    pass  # Could show a message
+                    pass  
                 elif result == "replay":
                     self.game_session.apply_store_perks()
                     self._start_game()
                 elif result == "menu":
-                    self.game_session.reset_session()  # Reset perks and money
+                    self.game_session.reset_session() 
                     self.state = "menu"
     
     def _start_game(self):
-        """Initialize and start a new game"""
         self.kitchen = Kitchen(self.num_players, self.game_session.get_perks())
         self.state = "playing"
     
     def _update(self, dt):
-        """Update game state"""
         if self.state == "playing":
             self.kitchen.update(dt)
             
@@ -154,7 +139,6 @@ class Game:
                 self._end_game()
     
     def _end_game(self):
-        """Handle game ending"""
         final_score = self.kitchen.score
         is_high_score = self.high_score_manager.add_score(final_score, self.num_players)
         
@@ -170,7 +154,6 @@ class Game:
         self.state = "game_over"
     
     def _draw(self):
-        """Render the current game state"""
         if self.state == "menu":
             self.main_menu.draw()
             
@@ -196,11 +179,10 @@ class Game:
             self.game_session.store.draw(self.screen)
     
     def _draw_gameplay(self):
-        """Draw the main gameplay screen"""
         # Clear screen
         self.screen.fill(DARK_BROWN)
         
-        # Draw kitchen (including floor)
+        # Draw kitchen 
         self.kitchen.draw(self.screen)
         
         # Draw UI top bar
@@ -229,7 +211,6 @@ class Game:
 
 
 def main():
-    """Entry point"""
     game = Game()
     game.run()
 

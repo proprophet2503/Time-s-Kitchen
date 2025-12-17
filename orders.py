@@ -1,7 +1,3 @@
-"""
-Order system for Time's Kitchen game
-"""
-
 import pygame
 import random
 import time
@@ -9,8 +5,6 @@ from settings import *
 
 
 class Order:
-    """Represents a customer order"""
-    
     def __init__(self, dish_type, order_id):
         self.dish_type = dish_type
         self.order_id = order_id
@@ -56,8 +50,6 @@ class Order:
 
 
 class CompletedOrder:
-    """Tracks a completed order for display"""
-    
     def __init__(self, order_name, reward, dish_image):
         self.order_name = order_name
         self.reward = reward
@@ -70,8 +62,6 @@ class CompletedOrder:
 
 
 class OrderManager:
-    """Manages all orders in the game"""
-    
     def __init__(self, num_players=1):
         self.orders = []
         self.completed_orders = []
@@ -148,8 +138,8 @@ class OrderManager:
         active_orders = self.get_active_orders()
         active_orders.sort(key=lambda o: o.wait_time, reverse=True)
         
-        order_width = 120  # Increased from 95 to 120
-        order_height = 55  # Increased from 48 to 55
+        order_width = 120  
+        order_height = 55  
         start_x = 320
         
         for i, order in enumerate(active_orders[:max_display]):

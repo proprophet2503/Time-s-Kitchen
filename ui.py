@@ -1,14 +1,8 @@
-"""
-UI system for Time's Kitchen game
-"""
-
 import pygame
 from settings import *
 
 
 class GameUI:
-    """Handles all game UI rendering"""
-    
     def __init__(self, screen):
         self.screen = screen
         self.font_large = pygame.font.Font(None, 48)
@@ -17,8 +11,7 @@ class GameUI:
         self.font_tiny = pygame.font.Font(None, 18)
         
     def draw_top_bar(self, time_remaining, score, game_hour):
-        """Draw the top information bar - similar to reference image"""
-        # Background - dark bar at top
+        # Background 
         pygame.draw.rect(self.screen, (30, 30, 30), (0, 0, SCREEN_WIDTH, 70))
         pygame.draw.line(self.screen, (60, 60, 60), (0, 70), (SCREEN_WIDTH, 70), 2)
         
@@ -75,7 +68,6 @@ class GameUI:
         self.screen.blit(salary_surface, salary_val_rect)
         
     def draw_player_info(self, players, y_offset=0):
-        """Draw player held items info at bottom left - similar to reference"""
         for i, player in enumerate(players):
             x = 15
             y = SCREEN_HEIGHT - 80 - (i * 85) + y_offset
@@ -128,8 +120,8 @@ class GameUI:
             pygame.draw.rect(self.screen, GREEN, (bar_x, bar_y, bar_width, bar_height))
             pygame.draw.rect(self.screen, WHITE, (bar_x, bar_y, bar_width, bar_height), 1)
     
+    # draw temporary message
     def draw_message(self, message, duration_alpha=255):
-        """Draw a temporary message on screen"""
         if message:
             text_surface = self.font_medium.render(message, True, WHITE)
             text_surface.set_alpha(duration_alpha)
@@ -147,7 +139,6 @@ class GameUI:
             self.screen.blit(text_surface, text_rect)
     
     def draw_controls_hint(self):
-        """Draw controls hint at bottom"""
         hints = [
             "SPACE/Enter: Interact",
             "E/Period: Serve",
@@ -161,7 +152,6 @@ class GameUI:
             self.screen.blit(text, (x, y))
     
     def draw_order_guide(self, active_orders):
-        """Draw simplified recipe guide for the first active order"""
         from orders import ORDER_GUIDES
         
         if not active_orders:
@@ -174,7 +164,7 @@ class GameUI:
         if not guide:
             return
         
-        # Draw guide panel on the right side - compact version
+        # Draw guide panel on the right side 
         panel_width = 280
         panel_height = 100
         panel_x = SCREEN_WIDTH - panel_width - 10
@@ -191,14 +181,12 @@ class GameUI:
         title_surface = self.font_small.render(guide['name'], True, YELLOW)
         self.screen.blit(title_surface, (panel_x + 10, panel_y + 10))
         
-        # Ingredients - use medium font for better visibility
+        # Ingredients 
         ingredients_surface = self.font_medium.render(guide['ingredients'], True, WHITE)
         self.screen.blit(ingredients_surface, (panel_x + 10, panel_y + 45))
 
 
 class MainMenu:
-    """Main menu screen"""
-    
     def __init__(self, screen):
         self.screen = screen
         self.font_title = pygame.font.Font(None, 72)
@@ -216,7 +204,6 @@ class MainMenu:
             self.background = None
         
     def handle_input(self, event):
-        """Handle menu input"""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 self.selected = (self.selected - 1) % len(self.options)
@@ -227,7 +214,6 @@ class MainMenu:
         return None
     
     def draw(self):
-        """Draw the main menu"""
         # Background
         if self.background:
             self.screen.blit(self.background, (0, 0))
@@ -264,8 +250,6 @@ class MainMenu:
 
 
 class PlayerSelectMenu:
-    """Player selection menu"""
-    
     def __init__(self, screen):
         self.screen = screen
         self.font_title = pygame.font.Font(None, 56)
@@ -283,7 +267,6 @@ class PlayerSelectMenu:
             self.background = None
         
     def handle_input(self, event):
-        """Handle menu input"""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 self.selected = (self.selected - 1) % len(self.options)
@@ -296,8 +279,6 @@ class PlayerSelectMenu:
         return None
     
     def draw(self):
-        """Draw player selection menu"""
-        # Draw background image or fallback to solid color
         if self.background:
             self.screen.blit(self.background, (0, 0))
         else:
@@ -339,8 +320,6 @@ class PlayerSelectMenu:
 
 
 class HowToPlayScreen:
-    """How to play instructions screen"""
-    
     def __init__(self, screen):
         self.screen = screen
         self.font_title = pygame.font.Font(None, 56)
@@ -348,14 +327,12 @@ class HowToPlayScreen:
         self.font_small = pygame.font.Font(None, 24)
         
     def handle_input(self, event):
-        """Handle input"""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE or event.key == pygame.K_RETURN:
                 return "Back"
         return None
     
     def draw(self):
-        """Draw how to play screen"""
         self.screen.fill(DARK_BROWN)
         
         # Title
@@ -412,8 +389,6 @@ class HowToPlayScreen:
 
 
 class HighScoreScreen:
-    """High scores display screen"""
-    
     def __init__(self, screen, scores):
         self.screen = screen
         self.scores = scores
@@ -422,14 +397,12 @@ class HighScoreScreen:
         self.font_small = pygame.font.Font(None, 28)
         
     def handle_input(self, event):
-        """Handle input"""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE or event.key == pygame.K_RETURN:
                 return "Back"
         return None
     
     def draw(self):
-        """Draw high scores"""
         self.screen.fill(DARK_BROWN)
         
         # Title
@@ -466,8 +439,6 @@ class HighScoreScreen:
 
 
 class GameOverScreen:
-    """Game over screen showing final score"""
-    
     def __init__(self, screen, score, num_players, is_high_score=False):
         self.screen = screen
         self.score = score
@@ -484,7 +455,7 @@ class GameOverScreen:
             self.background = pygame.image.load("assets/endmenu.png").convert()
             self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
         except:
-            self.background = None  # Fallback to colored background if image not found
+            self.background = None  
         
     def handle_input(self, event):
         """Handle input"""
@@ -496,8 +467,6 @@ class GameOverScreen:
         return None
     
     def draw(self):
-        """Draw game over screen"""
-        # Draw background image or fallback color
         if self.background:
             self.screen.blit(self.background, (0, 0))
         else:

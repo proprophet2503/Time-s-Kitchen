@@ -1,14 +1,8 @@
-"""
-Store system for purchasing perks between games
-"""
-
 import pygame
 from settings import *
 
 
 class Perk:
-    """Represents a purchasable perk"""
-    
     def __init__(self, name, description, cost, perk_type):
         self.name = name
         self.description = description
@@ -22,10 +16,8 @@ class Perk:
     def purchase(self):
         self.purchased = True
 
-
+# store interface
 class Store:
-    """Store interface for purchasing perks"""
-    
     def __init__(self, money):
         self.money = money
         self.perks = [
@@ -42,7 +34,6 @@ class Store:
         self.message_color = (255, 255, 255)
         
     def handle_input(self, event):
-        """Handle store input"""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 self.selected_index = (self.selected_index - 1) % len(self.perks)
@@ -60,8 +51,8 @@ class Store:
                 return "menu"
         return None
     
+    # try purchase perk
     def _purchase_perk(self, index):
-        """Try to purchase a perk"""
         perk = self.perks[index]
         if perk.purchased:
             self.message = "Already owned!"
@@ -82,7 +73,6 @@ class Store:
             return "cannot_afford"
     
     def get_active_perks(self):
-        """Get dictionary of active perks"""
         active = {}
         for perk in self.perks:
             if perk.purchased:
@@ -95,7 +85,6 @@ class Store:
         return active
     
     def draw(self, screen):
-        """Draw store interface"""
         WIDTH, HEIGHT = SCREEN_WIDTH, SCREEN_HEIGHT
         
         # Draw semi-transparent background
@@ -188,32 +177,26 @@ class Store:
             # Decrease timer
             self.message_timer -= 1
 
-
+# manage money and perks between games
 class GameSession:
-    """Manages money and perks across game replays"""
-    
     def __init__(self):
         self.total_money = 0
         self.active_perks = {}
         self.store = None
         
     def end_game(self, final_score):
-        """Called when game ends"""
         self.total_money = final_score
         self.store = Store(self.total_money)
         
     def get_perks(self):
-        """Get active perks for current session"""
         return self.active_perks
     
     def apply_store_perks(self):
-        """Apply perks from store after purchase"""
         if self.store:
             self.active_perks = self.store.get_active_perks()
             self.total_money = self.store.money
     
     def reset_session(self):
-        """Reset session (called when returning to main menu)"""
         self.total_money = 0
         self.active_perks = {}
         self.store = None
