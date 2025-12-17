@@ -174,38 +174,35 @@ class GameUI:
         if not guide:
             return
         
-        # Draw guide panel on the right side
-        panel_width = 250
-        panel_height = 220
+        # Draw guide panel on the right side - much wider to fit full text
+        panel_width = 380
+        panel_height = 250
         panel_x = SCREEN_WIDTH - panel_width - 10
         panel_y = SCREEN_HEIGHT - panel_height - 10
         
         # Background
         bg_surface = pygame.Surface((panel_width, panel_height))
         bg_surface.fill((20, 20, 20))
-        bg_surface.set_alpha(200)
+        bg_surface.set_alpha(220)
         self.screen.blit(bg_surface, (panel_x, panel_y))
         pygame.draw.rect(self.screen, (80, 80, 80), (panel_x, panel_y, panel_width, panel_height), 2, border_radius=5)
         
         # Title
         title_text = f"How to make {guide['name']}:"
         title_surface = self.font_small.render(title_text, True, YELLOW)
-        self.screen.blit(title_surface, (panel_x + 5, panel_y + 5))
+        self.screen.blit(title_surface, (panel_x + 8, panel_y + 8))
         
-        # Steps
-        y = panel_y + 30
-        for i, step in enumerate(guide['steps'][:7]):  # Show max 7 steps
-            # Truncate step if too long
-            if len(step) > 32:
-                step = step[:29] + "..."
+        # Steps - show full text without truncation
+        y = panel_y + 35
+        for i, step in enumerate(guide['steps'][:8]):  # Show max 8 steps
             step_surface = self.font_tiny.render(step, True, WHITE)
-            self.screen.blit(step_surface, (panel_x + 8, y))
-            y += 20
+            self.screen.blit(step_surface, (panel_x + 10, y))
+            y += 23
         
         # Reward
         reward_text = f"Reward: ${guide['reward']}"
-        reward_surface = self.font_tiny.render(reward_text, True, GREEN)
-        self.screen.blit(reward_surface, (panel_x + 8, panel_y + panel_height - 25))
+        reward_surface = self.font_small.render(reward_text, True, GREEN)
+        self.screen.blit(reward_surface, (panel_x + 10, panel_y + panel_height - 30))
 
 
 class MainMenu:
