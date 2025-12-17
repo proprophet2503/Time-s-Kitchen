@@ -120,6 +120,8 @@ class Player(pygame.sprite.Sprite):
         self.cleaning_duration = 60  # frames (1 second at 60 FPS)
         self.clean_sway_offset = 0
         self.sway_direction = 1
+        self.cleaning_dirt = None  # Reference to dirt being cleaned
+        self.cleaning_complete = False  # Flag for when cleaning animation finishes
         
         # Movement direction for rendering
         self.direction = "down"
@@ -149,10 +151,11 @@ class Player(pygame.sprite.Sprite):
             self.clean_sway_offset = int(10 * pygame.math.Vector2(1, 0).rotate(self.cleaning_timer * 10).x)
             
             if self.cleaning_timer >= self.cleaning_duration:
-                # Cleaning animation complete
+                # Cleaning animation complete - set flag for kitchen to handle
                 self.is_cleaning = False
                 self.cleaning_timer = 0
                 self.clean_sway_offset = 0
+                self.cleaning_complete = True  # Flag for kitchen to check
             return  # Don't allow movement during cleaning
         
         dx, dy = 0, 0
@@ -235,13 +238,20 @@ class Player(pygame.sprite.Sprite):
         self.collision_rect.x = self.rect.x + collision_offset_x
         self.collision_rect.y = self.rect.y + collision_offset_y
     
-    def start_cleaning(self):
+    def start_cleaning(self, dirt=None):
         """Start the cleaning animation"""
         if self.holding_mop and not self.is_cleaning:
             self.is_cleaning = True
             self.cleaning_timer = 0
+            self.cleaning_dirt = dirt  # Store reference to dirt being cleaned
             return True
         return False
+    
+    def finish_cleaning(self):
+        """Finish cleaning and return the cleaned dirt"""
+        dirt = getattr(self, 'cleaning_dirt', None)
+        self.cleaning_dirt = None
+        return dirt
     
     def pickup_mop(self, mop):
         """Pick up the mop"""
@@ -729,5 +739,35 @@ class Tenant(pygame.sprite.Sprite):
     
     def draw(self, screen):
         """Draw the tenant"""
+        screen.blit(self.image, self.rect)
+
+
+class Storeboard(pygame.sprite.Sprite):
+    """Static storeboard decoration"""
+    
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = SpriteSheet.load_image("storeboard.png", (100, 150))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+    
+    def draw(self, screen):
+        """Draw the storeboard"""
+        screen.blit(self.image, self.rect)
+
+
+class Bush(pygame.sprite.Sprite):
+    """Static bush decoration"""
+    
+    def __init__(self, x, y, height=415):
+        super().__init__()
+        self.image = SpriteSheet.load_image("bush.png", (80, height))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+    
+    def draw(self, screen):
+        """Draw the bush"""
         screen.blit(self.image, self.rect)
 

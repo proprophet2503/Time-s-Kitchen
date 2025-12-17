@@ -10,10 +10,13 @@ from sprites import SpriteSheet, Item
 class Station(pygame.sprite.Sprite):
     """Base class for all kitchen stations"""
     
-    def __init__(self, station_type, x, y, image_file):
+    def __init__(self, station_type, x, y, image_file, size=None):
         super().__init__()
         self.station_type = station_type
-        self.image = SpriteSheet.load_image(image_file, (STATION_SIZE, STATION_SIZE))
+        # Use custom size if provided, otherwise use default STATION_SIZE
+        if size is None:
+            size = (STATION_SIZE, STATION_SIZE)
+        self.image = SpriteSheet.load_image(image_file, size)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -66,24 +69,8 @@ class Cooler(Station):
     }
     
     def __init__(self, x, y, item_type):
-        # Override image size for cooler (make it bigger)
-        super().__init__(StationType.COOLER, x, y, "cooler.png")
-        
-        # Resize cooler to be bigger (120x120 instead of default STATION_SIZE)
-        cooler_size = 120
-        self.image = SpriteSheet.load_image("cooler.png", (cooler_size, cooler_size))
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        
-        # Update collision rect
-        self.collision_rect = pygame.Rect(
-            self.rect.x,
-            self.rect.y,
-            self.rect.width,
-            self.rect.height
-        )
-        
+        # Use bigger size for cooler (120x120 instead of default STATION_SIZE)
+        super().__init__(StationType.COOLER, x, y, "cooler.png", size=(120, 120))
         self.provides_item = item_type
         self.label = self._get_label()
         
@@ -133,8 +120,8 @@ class Cooler(Station):
 class CookingStation(Station):
     """Base class for cooking stations (Stove, Boiler)"""
     
-    def __init__(self, station_type, x, y, image_file, recipes, label=""):
-        super().__init__(station_type, x, y, image_file)
+    def __init__(self, station_type, x, y, image_file, recipes, label="", size=None):
+        super().__init__(station_type, x, y, image_file, size=size)
         self.recipes = recipes  # Dict of input_item: (output_item, cook_time)
         self.cooking = False
         self.cook_timer = 0
@@ -240,21 +227,22 @@ class Stove(CookingStation):
     """Stove for cooking meat and sausage"""
     
     def __init__(self, x, y):
-        super().__init__(StationType.STOVE, x, y, "stove.png", COOKING_STOVE, "Stove")
+        super().__init__(StationType.STOVE, x, y, "stove.png", COOKING_STOVE, "Stove", size=(95, 90))
 
 
 class Boiler(CookingStation):
     """Boiler for cooking pasta"""
     
     def __init__(self, x, y):
-        super().__init__(StationType.BOILER, x, y, "boiler.png", COOKING_BOILER, "Boiler")
+        super().__init__(StationType.BOILER, x, y, "boiler.png", COOKING_BOILER, "Boiler", size=(95, 90))
 
 
 class AssemblyTable(Station):
     """Table for assembling dishes"""
     
     def __init__(self, x, y):
-        super().__init__(StationType.ASSEMBLY, x, y, "assemble.png")
+        # Pass custom size directly to parent - no override needed!
+        super().__init__(StationType.ASSEMBLY, x, y, "assemble.png", size=(90, 120))
         self.items_on_table = []
         
     def interact(self, player):
@@ -448,14 +436,6 @@ class ServeCounter(Station):
         """Draw serve counter with label"""
         screen.blit(self.image, self.rect)
         
-        # Draw label
-        font = pygame.font.Font(None, 18)
-        text = font.render("Serve", True, WHITE)
-        text_rect = text.get_rect(centerx=self.rect.centerx, top=self.rect.bottom + 2)
-        bg_rect = text_rect.inflate(6, 2)
-        pygame.draw.rect(screen, (40, 40, 40), bg_rect)
-        screen.blit(text, text_rect)
-        
         # Draw served dish
         if self.served_dish:
             item_x = self.rect.centerx - ITEM_SIZE // 2
@@ -474,21 +454,7 @@ class MopStation(Station):
     
     def __init__(self, x, y):
         # Use smaller size for mop (60x60 instead of default STATION_SIZE)
-        super().__init__(StationType.MOP, x, y, "mop.png")
-        mop_size = 60
-        self.image = SpriteSheet.load_image("mop.png", (mop_size, mop_size))
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        
-        # Update collision rect
-        self.collision_rect = pygame.Rect(
-            self.rect.x,
-            self.rect.y,
-            self.rect.width,
-            self.rect.height
-        )
-        
+        super().__init__(StationType.MOP, x, y, "mop.png", size=(60, 60))
         self.has_mop = True
         
     def interact(self, player):

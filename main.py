@@ -107,7 +107,13 @@ class Game:
             elif self.state == "playing":
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self.state = "menu"
+                        # Check if cooler menu is open first
+                        if self.kitchen.show_cooler_menu:
+                            self.kitchen.show_cooler_menu = False
+                            self.kitchen.cooler_menu_player = None
+                        else:
+                            # Only return to menu if cooler menu is not open
+                            self.state = "menu"
                         return
                 self.kitchen.handle_input(event)
                 

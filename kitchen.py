@@ -5,7 +5,7 @@ Kitchen and gameplay management for Time's Kitchen game
 import pygame
 import random
 from settings import *
-from sprites import Player, Customer, Cashier, DirtSpot, Mop, SpriteSheet, Pedestrian, Tenant
+from sprites import Player, Customer, Cashier, DirtSpot, Mop, SpriteSheet, Pedestrian, Tenant, Storeboard, Bush
 from stations import Cooler, Stove, Boiler, AssemblyTable, ServeCounter, MopStation, DiningTable, LongTable, IngredientTable, SauceStation, LettuceStation
 from orders import OrderManager
 
@@ -36,6 +36,8 @@ class Kitchen:
         self.longtables = pygame.sprite.Group()
         self.pedestrians = pygame.sprite.Group()
         self.tenants = pygame.sprite.Group()
+        self.storeboards = pygame.sprite.Group()
+        self.bushes = pygame.sprite.Group()
         self.mops = pygame.sprite.Group()  # Mops that can be picked up
         
         # Create kitchen layout
@@ -44,6 +46,8 @@ class Kitchen:
         self._setup_cashier()
         self._setup_pedestrians()
         self._setup_tenants()
+        self._setup_storeboards()
+        self._setup_bushes()
         self._setup_mops()
         
         # Order management
@@ -74,7 +78,7 @@ class Kitchen:
         
         # === LEFT SIDE - Ingredient Storage ===
         # Single Cooler for meat/sausage (shows menu on click)
-        self.cooler = Cooler(10, 90, ItemType.MEAT)  # Main cooler
+        self.cooler = Cooler(5, 68, ItemType.MEAT)  # Main cooler
         
         # Ingredient tables for bread and pasta (upper row)
         table_bread = IngredientTable(150, 290, ItemType.BREAD)
@@ -95,15 +99,15 @@ class Kitchen:
         
         # === TOP CENTER - Cooking Area ===
         # Stoves for meat and sausage
-        stove1 = Stove(130, 95)
+        stove1 = Stove(125, 95)
         stove2 = Stove(220, 95)
         self.stations.add(stove1, stove2)
         self.all_sprites.add(stove1, stove2)
         self.stoves = [stove1, stove2]
         
         # Boilers for pasta  
-        boiler1 = Boiler(330, 95)
-        boiler2 = Boiler(420, 95)
+        boiler1 = Boiler(325, 95)
+        boiler2 = Boiler(415, 95)
         self.stations.add(boiler1, boiler2)
         self.all_sprites.add(boiler1, boiler2)
         self.boilers = [boiler1, boiler2]
@@ -114,8 +118,8 @@ class Kitchen:
         self.all_sprites.add(self.serve_counter)
         
         # === MIDDLE - Assembly Tables ===
-        assembly1 = AssemblyTable(475, 380)
-        assembly2 = AssemblyTable(475, 420)
+        assembly1 = AssemblyTable(475, 335)
+        assembly2 = AssemblyTable(475, 390)
         self.stations.add(assembly1, assembly2)
         self.all_sprites.add(assembly1, assembly2)
         self.assembly_tables = [assembly1, assembly2]
@@ -125,7 +129,7 @@ class Kitchen:
         self.stations.add(self.mop_station)
         self.all_sprites.add(self.mop_station)
         
-        # === BOTTOM - Dining Tables (decorative) ===
+        # === BOTTOM - Dining Tables 
         dining_positions = [
             (900, 220), (900, 320), (900, 420), # Right column
             (750, 220), (750, 320), (750, 420) # Second column from right
@@ -137,9 +141,9 @@ class Kitchen:
 
         # Long tables - horizontal and vertical
         longtable1 = LongTable(-25, 670, 550)  # Horizontal bottom
-        longtable2 = LongTable(450, 670, 150)  # Horizontal bottom right
-        longtable3 = LongTable(550, 100, 420, vertical=True)  # Vertical right side
-        longtable4 = LongTable(550, 100, 100, vertical=True)  # Vertical left side
+        longtable2 = LongTable(450, 670, 158)  # Horizontal bottom right
+        longtable3 = LongTable(550, 100, 415, vertical=True)  # Vertical right side
+        longtable4 = LongTable(550, 20, 100, vertical=True)  # Vertical left side
         
         for lt in [longtable1, longtable2, longtable3, longtable4]:
             self.longtables.add(lt)
@@ -193,12 +197,43 @@ class Kitchen:
     
     def _setup_tenants(self):
         """Set up tenant decorations on roadside"""
-        road_start_x = SCREEN_WIDTH - 250  # Road starts here
+        road_start_x = SCREEN_WIDTH - 70  # Road starts here
         
         # Place one tenant beside the road
-        tenant = Tenant(road_start_x - 10, 300)
+        tenant = Tenant(road_start_x - 10, 145)
+        tenant2 = Tenant(road_start_x - 130, 250)
         self.tenants.add(tenant)
-        self.all_sprites.add(tenant)
+        self.tenants.add(tenant2)
+    
+    def _setup_storeboards(self):
+        """Set up storeboard decorations"""
+        road_start_x = SCREEN_WIDTH - 188  # Road starts here
+        
+        # Place one storeboard beside the tenant
+        storeboard = Storeboard(road_start_x - 10, 420)
+        self.storeboards.add(storeboard)
+        self.all_sprites.add(storeboard)
+    def _setup_bushes(self):
+        """Set up bush decorations - multiple bushes arranged vertically"""
+        road_start_x = SCREEN_WIDTH - 250  # Road starts here
+        
+        # Create multiple bushes arranged vertically (total height ~415 like longtable)
+        bush_positions = [
+            (road_start_x - 450, 28, 85),
+            (road_start_x - 450, 148, 120),   # Top bush
+            (road_start_x - 450, 200, 120),   # Middle bush
+            (road_start_x - 450, 250, 120),   # Lower middle bush
+            (road_start_x - 450, 300, 85),
+            (road_start_x - 450, 350, 85),
+            (road_start_x - 450, 400, 85),
+            (road_start_x - 450, 420, 85),
+            (road_start_x - 450, 665, 85),     # Bottom bush (shorter)
+        ]
+        
+        for x, y, height in bush_positions:
+            bush = Bush(x, y, height=height)
+            self.bushes.add(bush)
+            self.all_sprites.add(bush)
     
     def _setup_mops(self):
         """Set up mop stations - mops that can be picked up"""
@@ -562,6 +597,14 @@ class Kitchen:
         # Draw tenants (decorations)
         for tenant in self.tenants:
             tenant.draw(screen)
+        
+        # Draw storeboards (decorations)
+        for storeboard in self.storeboards:
+            storeboard.draw(screen)
+        
+        # Draw bushes (decorations)
+        for bush in self.bushes:
+            bush.draw(screen)
         
         # Draw pedestrians
         for pedestrian in self.pedestrians:

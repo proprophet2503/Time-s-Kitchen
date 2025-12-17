@@ -231,60 +231,19 @@ class OrderManager:
 
 ORDER_GUIDES = {
     ItemType.BURGER: {
-        "name": "Burger",
-        "reward": REWARD_BURGER,
-        "steps": [
-            "1. Go to BREAD cooler (left) -> SPACE to pick Bread",
-            "2. Go to MEAT cooler (left) -> SPACE to pick Meat",
-            "3. Go to STOVE (top) -> SPACE to place Meat",
-            "4. Wait 5s for cooking (progress bar)",
-            "5. SPACE at Stove to grab Cooked Meat",
-            "6. Go to ASSEMBLY table -> SPACE to place items",
-            "7. SPACE again to assemble Burger",
-            "8. Go to SERVE counter -> E to serve"
-        ],
-        "ingredients": ["Bread", "Cooked Meat"]
+        "name": "How To Make Burger",
+        "ingredients": "Bread + Meat"
     },
     ItemType.HOTDOG: {
-        "name": "Hotdog",
-        "reward": REWARD_HOTDOG,
-        "steps": [
-            "1. Go to BREAD cooler (left) -> SPACE to pick Bread",
-            "2. Go to SAUSAGE cooler (left) -> SPACE to pick Sausage",
-            "3. Go to STOVE (top) -> SPACE to place Sausage",
-            "4. Wait 4s for cooking",
-            "5. SPACE at Stove to grab Cooked Sausage",
-            "6. Go to ASSEMBLY table -> SPACE to place items",
-            "7. SPACE again to assemble Hotdog",
-            "8. Go to SERVE counter -> E to serve"
-        ],
-        "ingredients": ["Bread", "Cooked Sausage"]
+        "name": "How To Make Hotdog",
+        "ingredients": "Bread + Sausage"
     },
     ItemType.PASTA_DISH: {
-        "name": "Pasta",
-        "reward": REWARD_PASTA,
-        "steps": [
-            "1. Go to PASTA table (left) -> SPACE to pick Pasta",
-            "2. Go to BOILER (top) -> SPACE to place Pasta",
-            "3. Wait 7s for boiling",
-            "4. SPACE at Boiler to grab Boiled Pasta",
-            "5. Go to SAUCE station (bottom left) -> SPACE for Sauce",
-            "6. Go to ASSEMBLY table -> SPACE to place items",
-            "7. SPACE again to assemble Pasta dish",
-            "8. Go to SERVE counter -> E to serve"
-        ],
-        "ingredients": ["Boiled Pasta", "Sauce"]
+        "name": "How To Make Pasta",
+        "ingredients": "Pasta + Sauce"
     },
     ItemType.SALAD_DISH: {
-        "name": "Salad",
-        "reward": REWARD_SALAD,
-        "steps": [
-            "1. Go to LETTUCE station (bottom left) -> SPACE to pick Lettuce",
-            "2. Go to SAUCE station (bottom left) -> SPACE to pick Sauce",
-            "3. Go to ASSEMBLY table -> SPACE to place items",
-            "4. SPACE again to assemble Salad",
-            "5. Go to SERVE counter -> E to serve"
-        ],
-        "ingredients": ["Lettuce", "Sauce"]
+        "name": "How To Make Salad",
+        "ingredients": "Lettuce + Sauce"
     }
 }

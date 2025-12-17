@@ -161,7 +161,7 @@ class GameUI:
             self.screen.blit(text, (x, y))
     
     def draw_order_guide(self, active_orders):
-        """Draw step-by-step guide for the first active order"""
+        """Draw simplified recipe guide for the first active order"""
         from orders import ORDER_GUIDES
         
         if not active_orders:
@@ -174,9 +174,9 @@ class GameUI:
         if not guide:
             return
         
-        # Draw guide panel on the right side - much wider to fit full text
-        panel_width = 380
-        panel_height = 250
+        # Draw guide panel on the right side - compact version
+        panel_width = 280
+        panel_height = 100
         panel_x = SCREEN_WIDTH - panel_width - 10
         panel_y = SCREEN_HEIGHT - panel_height - 10
         
@@ -188,21 +188,12 @@ class GameUI:
         pygame.draw.rect(self.screen, (80, 80, 80), (panel_x, panel_y, panel_width, panel_height), 2, border_radius=5)
         
         # Title
-        title_text = f"How to make {guide['name']}:"
-        title_surface = self.font_small.render(title_text, True, YELLOW)
-        self.screen.blit(title_surface, (panel_x + 8, panel_y + 8))
+        title_surface = self.font_small.render(guide['name'], True, YELLOW)
+        self.screen.blit(title_surface, (panel_x + 10, panel_y + 10))
         
-        # Steps - show full text without truncation
-        y = panel_y + 35
-        for i, step in enumerate(guide['steps'][:8]):  # Show max 8 steps
-            step_surface = self.font_tiny.render(step, True, WHITE)
-            self.screen.blit(step_surface, (panel_x + 10, y))
-            y += 23
-        
-        # Reward
-        reward_text = f"Reward: ${guide['reward']}"
-        reward_surface = self.font_small.render(reward_text, True, GREEN)
-        self.screen.blit(reward_surface, (panel_x + 10, panel_y + panel_height - 30))
+        # Ingredients - use medium font for better visibility
+        ingredients_surface = self.font_medium.render(guide['ingredients'], True, WHITE)
+        self.screen.blit(ingredients_surface, (panel_x + 10, panel_y + 45))
 
 
 class MainMenu:
@@ -243,12 +234,6 @@ class MainMenu:
         else:
             self.screen.fill(DARK_BROWN)
         
-        # Semi-transparent overlay
-        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        overlay.fill(BLACK)
-        overlay.set_alpha(150)
-        self.screen.blit(overlay, (0, 0))
-        
         # Title
         title = self.font_title.render("TIME'S KITCHEN", True, YELLOW)
         title_rect = title.get_rect(centerx=SCREEN_WIDTH // 2, y=100)
@@ -263,7 +248,7 @@ class MainMenu:
         for i, option in enumerate(self.options):
             if i == self.selected:
                 color = YELLOW
-                prefix = "> "
+                prefix = ""
             else:
                 color = WHITE
                 prefix = "  "
@@ -290,6 +275,13 @@ class PlayerSelectMenu:
         self.options = ["1 Player", "2 Players", "Back"]
         self.selected = 0
         
+        # Load background
+        try:
+            from sprites import SpriteSheet
+            self.background = SpriteSheet.load_image("selectmenu.png", (SCREEN_WIDTH, SCREEN_HEIGHT))
+        except:
+            self.background = None
+        
     def handle_input(self, event):
         """Handle menu input"""
         if event.type == pygame.KEYDOWN:
@@ -305,7 +297,17 @@ class PlayerSelectMenu:
     
     def draw(self):
         """Draw player selection menu"""
-        self.screen.fill(DARK_BROWN)
+        # Draw background image or fallback to solid color
+        if self.background:
+            self.screen.blit(self.background, (0, 0))
+        else:
+            self.screen.fill(DARK_BROWN)
+        
+        # Semi-transparent overlay
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        overlay.fill(BLACK)
+        overlay.set_alpha(150)
+        self.screen.blit(overlay, (0, 0))
         
         # Title
         title = self.font_title.render("SELECT PLAYERS", True, YELLOW)
@@ -316,7 +318,7 @@ class PlayerSelectMenu:
         for i, option in enumerate(self.options):
             if i == self.selected:
                 color = YELLOW
-                prefix = "> "
+                prefix = ""
             else:
                 color = WHITE
                 prefix = "  "
@@ -500,6 +502,12 @@ class GameOverScreen:
             self.screen.blit(self.background, (0, 0))
         else:
             self.screen.fill(DARK_BROWN)
+        
+        # Semi-transparent overlay
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        overlay.fill(BLACK)
+        overlay.set_alpha(150)
+        self.screen.blit(overlay, (0, 0))
         
         # Title
         title = self.font_title.render("SHIFT COMPLETE!", True, YELLOW)
