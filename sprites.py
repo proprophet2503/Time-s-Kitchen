@@ -665,6 +665,9 @@ class Mop(pygame.sprite.Sprite):
         """Draw the mop if not being held"""
         if not self.is_held:
             screen.blit(self.image, self.rect)
+        # Debug: print when mop should be hidden
+        # if self.is_held:
+        #     print(f"DEBUG: Mop is held, not drawing at ({self.rect.x}, {self.rect.y})")
 
 
 class DirtSpot(pygame.sprite.Sprite):

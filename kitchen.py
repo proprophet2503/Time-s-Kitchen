@@ -205,7 +205,7 @@ class Kitchen:
         # Place mop near the mop station
         mop1 = Mop(30, 595)
         self.mops.add(mop1)
-        self.all_sprites.add(mop1)
+        # Don't add to all_sprites - we draw mops separately with their draw() method
     
     def _on_new_order(self, order):
         """Callback when new order is created"""
