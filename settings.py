@@ -93,6 +93,9 @@ class ItemType:
     HOTDOG = "hotdog"
     PASTA_DISH = "pasta_dish"
     SALAD_DISH = "salad_dish"
+    
+    # Tools
+    MOP = "mop"
 
 # Station types
 class StationType:

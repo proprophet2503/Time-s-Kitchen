@@ -50,7 +50,7 @@ class Item(pygame.sprite.Sprite):
         ItemType.HOTDOG: "hot dog.png",
         ItemType.PASTA_DISH: "boiled_pasta.png", # Use boiled pasta for dish
         ItemType.SALAD_DISH: "salad.png",
-  
+        ItemType.MOP: "mop.png",
     }
     
     def __init__(self, item_type, x=0, y=0):
@@ -81,7 +81,8 @@ class Item(pygame.sprite.Sprite):
             ItemType.BURGER: "Burger",
             ItemType.HOTDOG: "Hotdog",
             ItemType.PASTA_DISH: "Pasta",
-            ItemType.SALAD_DISH: "Salad"
+            ItemType.SALAD_DISH: "Salad",
+            ItemType.MOP: "Mop"
         }
         return names.get(self.item_type, "Unknown")
 
