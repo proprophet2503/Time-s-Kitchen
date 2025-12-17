@@ -642,6 +642,23 @@ class LongTable(pygame.sprite.Sprite):
             self.rect.height
         )
 
+class Mop(pygame.sprite.Sprite):
+    """Mop tool that can be picked up and dropped"""
+    
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = SpriteSheet.load_image("mop.png", (30, 50))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.is_held = False
+    
+    def draw(self, screen):
+        """Draw the mop if not being held"""
+        if not self.is_held:
+            screen.blit(self.image, self.rect)
+
+
 class DirtSpot(pygame.sprite.Sprite):
     """Food stain that needs to be cleaned"""
     
