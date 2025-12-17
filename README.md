@@ -111,6 +111,12 @@ Proyek ini menerapkan prinsip Object-Oriented Programming dengan struktur sebaga
    - Separation of concerns (UI, logic, data)
    - Event-driven architecture dengan callbacks
 
+### Class Diagram
+
+![Class Diagram](classDiagram.png)
+
+Diagram di atas menunjukkan struktur class dan relasi antar class dalam project Time's Kitchen, termasuk inheritance, composition, dan aggregation yang diterapkan.
+
 ## Cara Menjalankan
 
 ### Persyaratan Sistem
