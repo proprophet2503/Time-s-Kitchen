@@ -110,6 +110,17 @@ class Player(pygame.sprite.Sprite):
         self.held_item = None
         self.held_items = []  # For assembly - can hold multiple items
         
+        # Mop handling
+        self.holding_mop = False
+        self.mop_object = None  # Reference to the mop object
+        
+        # Cleaning animation
+        self.is_cleaning = False
+        self.cleaning_timer = 0
+        self.cleaning_duration = 60  # frames (1 second at 60 FPS)
+        self.clean_sway_offset = 0
+        self.sway_direction = 1
+        
         # Movement direction for rendering
         self.direction = "down"
         
@@ -131,6 +142,19 @@ class Player(pygame.sprite.Sprite):
         
     def update(self, keys, obstacles=None):
         """Update player position based on input"""
+        # If cleaning animation is active, handle it
+        if self.is_cleaning:
+            self.cleaning_timer += 1
+            # Sway animation - move left and right
+            self.clean_sway_offset = int(10 * pygame.math.Vector2(1, 0).rotate(self.cleaning_timer * 10).x)
+            
+            if self.cleaning_timer >= self.cleaning_duration:
+                # Cleaning animation complete
+                self.is_cleaning = False
+                self.cleaning_timer = 0
+                self.clean_sway_offset = 0
+            return  # Don't allow movement during cleaning
+        
         dx, dy = 0, 0
         
         if self.player_num == 1:
@@ -210,6 +234,31 @@ class Player(pygame.sprite.Sprite):
         # Final collision rect update
         self.collision_rect.x = self.rect.x + collision_offset_x
         self.collision_rect.y = self.rect.y + collision_offset_y
+    
+    def start_cleaning(self):
+        """Start the cleaning animation"""
+        if self.holding_mop and not self.is_cleaning:
+            self.is_cleaning = True
+            self.cleaning_timer = 0
+            return True
+        return False
+    
+    def pickup_mop(self, mop):
+        """Pick up the mop"""
+        if not self.holding_mop:
+            self.holding_mop = True
+            self.mop_object = mop
+            return True
+        return False
+    
+    def drop_mop(self):
+        """Drop the mop at current location"""
+        if self.holding_mop:
+            mop = self.mop_object
+            self.holding_mop = False
+            self.mop_object = None
+            return mop
+        return None
     
     def pickup_item(self, item):
         """Pick up an item"""
