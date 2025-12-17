@@ -600,6 +600,9 @@ class DiningTable(Station):
         super().__init__("dining", x, y, "diningtable.png")
         self.occupied = False  # Track if table is occupied by customer
         
+        # Remove collision - players can walk through dining tables
+        self.collision_rect = pygame.Rect(0, 0, 0, 0)
+        
     def interact(self, player):
         """No interaction with dining tables"""
         return False, "This is a customer dining table."
