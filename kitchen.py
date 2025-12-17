@@ -329,6 +329,7 @@ class Kitchen:
                 if distance < 80:
                     if player.pickup_mop(mop):
                         mop.is_held = True
+                        mop.holder = player  # Set holder reference
                         self.show_message("Picked up mop! Press SPACE near dirt to clean")
                         return
         
@@ -432,6 +433,7 @@ class Kitchen:
                 mop.rect.x = player.rect.x
                 mop.rect.y = player.rect.y + player.rect.height
                 mop.is_held = False
+                mop.holder = None  # Clear holder reference
                 self.show_message("Dropped mop")
                 return
         

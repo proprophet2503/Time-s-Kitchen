@@ -652,6 +652,14 @@ class Mop(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.is_held = False
+        self.holder = None  # Reference to player holding the mop
+    
+    def update(self):
+        """Update mop position if being held"""
+        if self.is_held and self.holder:
+            # Move mop position off-screen or with player (won't be drawn anyway)
+            self.rect.x = self.holder.rect.x + self.holder.rect.width - 10
+            self.rect.y = self.holder.rect.y + self.holder.rect.height // 2
     
     def draw(self, screen):
         """Draw the mop if not being held"""
