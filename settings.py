@@ -29,7 +29,7 @@ ORDER_BG = (70, 50, 30)
 ORDER_URGENT = (150, 50, 30)
 
 # Game timing (in seconds)
-GAME_DURATION = 30  # 6 minutes = 360 seconds
+GAME_DURATION = 360  # 6 minutes = 360 seconds
 GAME_HOUR = 60  # 1 game hour = 60 real seconds (1 minute)
 ORDER_TIMEOUT = 30  # Seconds before order expires
 
@@ -50,7 +50,7 @@ ORDERS_PER_HOUR_SINGLE = 5
 ORDERS_PER_HOUR_MULTI = 10
 
 # Player settings
-PLAYER_SPEED = 3
+PLAYER_SPEED = 2.3
 PLAYER_SIZE = 80  # Default size (used by Player 2, NPCs, Customers)
 PLAYER1_SIZE = 120  # Player 1 specific size (set same as PLAYER_SIZE to match Player 2)
 
