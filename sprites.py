@@ -293,8 +293,26 @@ class Player(pygame.sprite.Sprite):
     
     def draw(self, screen):
         """Draw the player and held items clearly visible"""
+        # Apply sway offset during cleaning animation
+        draw_x = self.rect.x + self.clean_sway_offset
+        draw_rect = pygame.Rect(draw_x, self.rect.y, self.rect.width, self.rect.height)
+        
         # Draw player sprite
-        screen.blit(self.image, self.rect)
+        screen.blit(self.image, draw_rect)
+        
+        # Draw mop if holding it
+        if self.holding_mop and self.mop_object:
+            # Draw mop next to player
+            mop_x = draw_x + self.rect.width - 10
+            mop_y = self.rect.y + self.rect.height // 2
+            mop_img = SpriteSheet.load_image("mop.png", (30, 50))
+            screen.blit(mop_img, (mop_x, mop_y))
+            
+            # Show "Cleaning..." text if cleaning
+            if self.is_cleaning:
+                font = pygame.font.Font(None, 18)
+                clean_text = font.render("Cleaning...", True, (255, 255, 0))
+                screen.blit(clean_text, (self.rect.centerx - 30, self.rect.top - 15))
         
         # Draw held items above player head - clearly visible
         if self.held_items:
